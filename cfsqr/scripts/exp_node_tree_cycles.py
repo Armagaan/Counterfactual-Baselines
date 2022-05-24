@@ -1,5 +1,4 @@
 import os
-print(os.getcwd())
 import numpy as np
 import torch
 from utils.argument import arg_parse_exp_node_tree_cycles
@@ -7,7 +6,6 @@ from models.explainer_models import NodeExplainerEdgeMulti
 from models.gcn import GCNNodeTreeCycles
 from utils.preprocessing.tree_cycles_preprocessing import TreeCyclesDataset
 import sys
-
 
 if __name__ == "__main__":
     torch.manual_seed(1000)
@@ -49,6 +47,5 @@ if __name__ == "__main__":
         test_indices=test_indices,
         # fix_exp=6
     )
-
-    FOLDER_PATH = "/home/shade/code/github/gnn_cff/tests/eval_set/treecycles"
+    FOLDER_PATH = exp_args.output
     explainer.explain_nodes_gnn_stats(FOLDER_PATH)

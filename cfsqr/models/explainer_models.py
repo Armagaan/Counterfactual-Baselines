@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from utils.common_utils import mutag_dgl_to_networkx, get_mutag_color_dict, ba_shapes_dgl_to_networkx
 import pickle
+import os
 
 class GraphExplainerEdge(torch.nn.Module):
     def __init__(self, base_model, G_dataset, test_indices, args, fix_exp=None):
@@ -238,7 +239,7 @@ class NodeExplainerEdgeMulti(torch.nn.Module):
                 ori_label = self.G_dataset.labels[gid]
             else:
                 ori_label = torch.argmax(self.G_dataset.labels[gid])
-            
+
             ### modified code --> Burouj, 1 May, 2022
 
             # if self.args.dataset == 'citeseer' or (ori_pred_label != 0 and ori_label != 0):
@@ -249,7 +250,7 @@ class NodeExplainerEdgeMulti(torch.nn.Module):
                 # pred_label_dict[gid] = ori_pred_label
 
             t_gid.append(gid)
-            masked_adj, exp_num = self.explain(gid, ori_pred_label)
+            masked_adj, exp_num = self.explain(gid, ori_pred_label, folder_path) # folder path is part of testing code
             exp_dict[gid] = masked_adj
             num_dict[gid] = exp_num
             pred_label_dict[gid] = ori_pred_label
@@ -267,23 +268,20 @@ class NodeExplainerEdgeMulti(torch.nn.Module):
             f1 = -1
         else:
             acc, pre, rec, f1 = self.compute_precision_recall(exp_dict)
-        
-        # change according to dataset
-        # with open("/home/shade/code/gitHub/gnn_cff/t_gid.pkl", "wb") as file:
+
+		# ! Start: Testing code: Burouj
         with open(f"{folder_path}/t_gid.pkl", "wb") as file:
             pickle.dump(t_gid, file)
-        
-        # with open("/home/shade/code/gitHub/gnn_cff/exp_dict.pkl", "wb") as file:
+
         with open(f"{folder_path}/exp_dict.pkl", "wb") as file:
             pickle.dump(exp_dict, file)
-        
-        # with open("/home/shade/code/gitHub/gnn_cff/num_dict.pkl", "wb") as file:
+
         with open(f"{folder_path}/num_dict.pkl", "wb") as file:
             pickle.dump(num_dict, file)
-        
-        # with open("/home/shade/code/gitHub/gnn_cff/pred_label_dict.pkl", "wb") as file:
+
         with open(f"{folder_path}/pred_label_dict.pkl", "wb") as file:
             pickle.dump(pred_label_dict, file)
+		# ! End
 
         print('PN', PN)
         print('PS', PS)
@@ -292,7 +290,7 @@ class NodeExplainerEdgeMulti(torch.nn.Module):
         print('acc: ', acc, ' pre: ', pre, ' rec: ', rec, ' f1: ', f1)
         return PN, PS, 2 * PN * PS / (PN + PS), sum(num_dict.values()) / len(num_dict.keys()), acc, pre, rec, f1
 
-    def explain(self, gid, pred_label):
+    def explain(self, gid, pred_label, folder_path=None): # folder_path is part of testing code
         explainer = ExplainModelNodeMulti(
             graph=self.G_dataset.graphs[gid],
             base_model=self.base_model,
@@ -318,12 +316,10 @@ class NodeExplainerEdgeMulti(torch.nn.Module):
             optimizer.step()
 
         # --> print new predicted label here <--
-        with open("/home/shade/code/github/gnn_cff/pred_proba.txt", "a") as file:
+        with open(f"{folder_path}/pred_proba.txt", "a") as file:
             temp = pred2.clone().detach()
-            # file.write('----------\n')
             np.savetxt(file, temp.numpy())
-            # file.write('----------\n\n')
-        
+
         masked_adj = explainer.get_masked_adj()
         new_edge_num = len(masked_adj[masked_adj > self.args.mask_thresh])
         exp_num = new_edge_num / 2

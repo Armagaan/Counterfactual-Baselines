@@ -1,4 +1,0 @@
-/home/shade/code/github/Counterfactual-Baselines/cfsqr
-argument:
- Namespace(alp=0.0, cuda='0', dataset='Tree_Cycles', gam=0.5, gpu=False, lam=500, lr=0.05, mask_thresh=0.1, model_path='log/Tree_Cycles_logs', num_epochs=500, opt='adam', weight_decay=0.005)
-processing

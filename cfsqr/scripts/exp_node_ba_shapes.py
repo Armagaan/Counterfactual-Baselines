@@ -4,9 +4,8 @@ import torch
 from utils.argument import arg_parse_exp_node_ba_shapes
 from models.explainer_models import NodeExplainerEdgeMulti
 from models.gcn import GCNNodeBAShapes
-from utils.preprocessing.ba_shapes_preprocessing import BAShapesDataset
+from utils.preprocessing.ba_shapes_preprocessing import BAShapesDatase
 import sys
-
 
 if __name__ == "__main__":
     torch.manual_seed(0)
@@ -48,5 +47,5 @@ if __name__ == "__main__":
         # fix_exp=6
     )
 
-    FOLDER_PATH = "/home/shade/code/github/gnn_cff/tests/eval_set/bashapes"
+    FOLDER_PATH = exp_args.output
     explainer.explain_nodes_gnn_stats(FOLDER_PATH)

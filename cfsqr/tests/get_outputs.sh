@@ -8,8 +8,8 @@ usage() {
     echo
     echo "USAGE: bash ${0} [-d DATASET] [-a ALPHA]" >&2
     echo
-    echo "DATASET:  path to dataset"
-    echo "ALPHA:    value in [0,1]"
+    echo "DATASET:  Dataset name. One of [bashapes, treecycles, treegrids]"
+    echo "ALPHA:    Value in [0,1]. Smaller the value, greater the counterfactual behaviour"
     exit 1
 }
 
@@ -35,19 +35,31 @@ source setup.sh
 source ~/anaconda3/etc/profile.d/conda.sh
 conda activate cfsqr
 
+# Create a folder for storing outputs
+NOW=$(date +'%s') # present time in milliseconds
+
+DATASETS="bashapes treecycles treegrids"
+if [[ ! " ${DATASETS[*]} " =~ " ${DATASET} " ]]; then
+    echo "INVALID DATASET"
+    exit 1
+fi
+
+FOLDER="outputs/${DATASET}/${DATASET}-alp_${ALP}-${NOW}"
+mkdir "$FOLDER"
+
 # Choose a script based on the supplied dataset.
 case ${DATASET} in
     bashapes)
-        python scripts/exp_node_ba_shapes.py --alp="$ALP" > outputs/bashapes/log-"$DATASET"-"$ALP".txt
+        python scripts/exp_node_ba_shapes.py --alp="$ALP" --output="$FOLDER" > "$FOLDER"/log.txt
         ;;
     treecycles)
-        python scripts/exp_node_tree_cycles.py --alp="$ALP" > outputs/treecycles/log-"$DATASET"-"$ALP".txt
+        python scripts/exp_node_tree_cycles.py --alp="$ALP" --output="$FOLDER" > "$FOLDER"/log.txt
         ;;
     treegrids)
-        python scripts/exp_node_tree_grids.py --alp="$ALP" > outputs/treegrids/log-"$DATASET"-"$ALP".txt
+        python scripts/exp_node_tree_grids.py --alp="$ALP" --output="$FOLDER" > "$FOLDER"/log.txt
         ;;
     *)
-        echo "Invalid dataset" >&2
+        echo "Something's wrong" >&2
         exit 1
         ;;
 esac

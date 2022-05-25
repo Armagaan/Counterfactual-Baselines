@@ -28,6 +28,15 @@ while getopts "a:d:" OPTION; do
 done
 shift "$(( OPTIND - 1 ))"
 
+DATASETS="bashapes treecycles treegrids"
+if [[ ! " ${DATASETS[*]} " =~ " ${DATASET} " ]]; then
+    echo "Invalid dataset"
+    usage
+elif [ "$ALP" > 1 ] || [ "$ALP" < 0 ]; then
+    echo "Invalid value for alpha!"
+    usage
+fi
+
 # Add present directory to python path. This is required by the authors.
 source setup.sh
 
@@ -37,12 +46,6 @@ conda activate cfsqr
 
 # Create a folder for storing outputs
 NOW=$(date +'%s') # present time in milliseconds
-
-DATASETS="bashapes treecycles treegrids"
-if [[ ! " ${DATASETS[*]} " =~ " ${DATASET} " ]]; then
-    echo "INVALID DATASET"
-    exit 1
-fi
 
 FOLDER="outputs/${DATASET}/${DATASET}-alp_${ALP}-${NOW}"
 mkdir "$FOLDER"

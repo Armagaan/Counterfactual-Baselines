@@ -103,6 +103,6 @@ cf_found = 0
 for node_id, (label, prediction) in labels_and_preds.items():
     if label != prediction:
         cf_found += 1
-        
+
 fidelity = 1 - cf_found/sum(list(NODES_PER_LABEL.values()))
 print(f"\nFidelity:\n{fidelity}")

@@ -1,5 +1,6 @@
 from __future__ import division
 from __future__ import print_function
+from dbm import dumb
 import sys
 sys.path.append('..')
 import argparse
@@ -85,6 +86,7 @@ model.load_state_dict(torch.load("models/gcn_3layer_{}.pt".format(args.dataset))
 model.eval()
 output = model(features, norm_adj)
 y_pred_orig = torch.argmax(output, dim=1)
+
 print("y_true counts: {}".format(np.unique(labels.numpy(), return_counts=True)))
 # Confirm model is actually doing something
 print("y_pred_orig counts: {}".format(np.unique(y_pred_orig.numpy(), return_counts=True)))
@@ -169,6 +171,15 @@ if args.edge_additions == 1:
 	) as f:
 		pickle.dump(test_cf_examples, f)
 
+	with safe_open(
+		f"results_incl_additions"
+		f"/{args.dataset}"
+		f"/{args.optimizer}"
+		f"/{args.dataset}"
+		"predictions.pkl", "wb"
+	) as file:
+		pickle.dump(y_pred_orig)
+
 elif args.edge_additions == 0:
 	with safe_open(
 		f"results"
@@ -181,3 +192,11 @@ elif args.edge_additions == 0:
 		f"_epochs{args.num_epochs}", "wb"
 	) as f:
 		pickle.dump(test_cf_examples, f)
+
+	with safe_open(
+		f"results"
+		f"/{args.dataset}"
+		f"/{args.optimizer}"
+		"predictions.pkl", "wb"
+	) as file:
+		pickle.dump(y_pred_orig, file)

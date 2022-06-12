@@ -3,11 +3,11 @@ source ~/anaconda3/etc/profile.d/conda.sh
 conda activate cfsqr
 
 echo "<----- BA-SHAPES ALPHA=0.0 ----->"
-python tests/tests.py outputs/bashapes/bashapes-alp_0.0-1653373398
+python tests/tests.py outputs/bashapes/bashapes-alp_0.0-1653544735
 echo
 
 echo "<----- BA-SHAPES ALPHA=0.6 ----->"
-python tests/tests.py outputs/bashapes/bashapes-alp_0.6-1653373410
+python tests/tests.py outputs/bashapes/bashapes-alp_0.6-1653548599
 echo
 
 echo "<----- TREE-CYCLES ALPHA=0.0 ----->"

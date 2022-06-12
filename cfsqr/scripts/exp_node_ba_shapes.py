@@ -4,7 +4,7 @@ import torch
 from utils.argument import arg_parse_exp_node_ba_shapes
 from models.explainer_models import NodeExplainerEdgeMulti
 from models.gcn import GCNNodeBAShapes
-from utils.preprocessing.ba_shapes_preprocessing import BAShapesDatase
+from utils.preprocessing.ba_shapes_preprocessing import BAShapesDataset
 import sys
 
 if __name__ == "__main__":

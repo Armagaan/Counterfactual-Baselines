@@ -9,7 +9,7 @@ usage() {
     echo "USAGE: bash ${0} [-d DATASET] [-a ALPHA]" >&2
     echo
     echo "DATASET:  Dataset name. One of [bashapes, treecycles, treegrids]"
-    echo "ALPHA:    Value in [0,1]. Smaller the value, greater the counterfactual behaviour"
+    echo "ALPHA:    Float value in [0.0, 1.0]. Smaller the value, greater the counterfactual behaviour"
     exit 1
 }
 
@@ -29,10 +29,13 @@ done
 shift "$(( OPTIND - 1 ))"
 
 DATASETS="bashapes treecycles treegrids"
+MIN=0.0
+MAX=1.0
 if [[ ! " ${DATASETS[*]} " =~ " ${DATASET} " ]]; then
     echo "Invalid dataset"
     usage
-elif [ "$ALP" > 1 ] || [ "$ALP" < 0 ]; then
+elif [ 1 -eq "$(echo "${ALP} < ${MIN}" | bc)" ] || [ 1 -eq "$(echo "${ALP} > ${MAX}" | bc)" ]
+then
     echo "Invalid value for alpha!"
     usage
 fi

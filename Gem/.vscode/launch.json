@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Explainer",
+            "type": "python",
+            "request": "launch",
+            "program": "test_explained_adj.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--dataset", "syn1",
+                "--distillation", "syn1_top6",
+                "--exp_out", "syn1_top6",
+                "--top_k", "6"
+            ]
+        }
+    ]
+}
+
+// Train
+// python explainer_gae.py --dataset=syn1 --distillation=syn1_top6 --output=syn1_top6
+
+// Evaluate
+// python test_explained_adj.py --dataset=syn1 --distillation=syn1_top6 --exp_out=syn1_top6 --top_k=6

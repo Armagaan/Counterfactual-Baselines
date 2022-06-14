@@ -149,15 +149,6 @@ for i in idx_test:
 print("Total time elapsed: {:.4f}s".format((time.time() - start)/60))
 print("Number of CF examples found: {}/{}".format(len(test_cf_examples), len(idx_test)))
 
-# Save CF examples in test set
-# if args.edge_additions == 1:
-# 	with safe_open(f"../results_incl_additions/{args.dataset}/{args.optimizer}/{args.dataset}_cf_examples_lr{args.lr}_beta{args.beta}_mom{args.n_momentum}_epochs{args.num_epochs}", "wb") as f:
-# 		pickle.dump(test_cf_examples, f)
-
-# elif args.edge_additions == 0:
-# 	with safe_open(f"../results/{args.dataset}/{args.optimizer}/{args.dataset}_cf_examples_lr{args.lr}_beta{args.beta}_mom{args.n_momentum}_epochs{args.num_epochs}", "wb") as f:
-# 		pickle.dump(test_cf_examples, f)
-
 if args.edge_additions == 1:
 	with safe_open(
 		f"results_incl_additions"

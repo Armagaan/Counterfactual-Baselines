@@ -1,18 +1,24 @@
 from __future__ import division
 from __future__ import print_function
-import sys
-sys.path.append('../../')
 import argparse
 import pickle
-import numpy as np
 import time
+import sys
+sys.path.append('../../')
+
+import numpy as np
 import torch
 import torch.nn.functional as F
 
-from src.gcn import GCNSynthetic
-from src.utils.utils import normalize_adj, get_neighbourhood, safe_open, get_degree_matrix, create_symm_matrix_from_vec, create_vec_from_symm_matrix
+from src.train import GCNSynthetic
+from src.utils.utils import \
+	normalize_adj,\
+	get_neighbourhood,\
+	safe_open,\
+	get_degree_matrix,\
+	create_symm_matrix_from_vec,\
+	create_vec_from_symm_matrix
 from torch_geometric.utils import dense_to_sparse
-
 
 
 parser = argparse.ArgumentParser()
@@ -36,37 +42,41 @@ np.random.seed(args.seed)
 torch.manual_seed(args.seed)
 torch.autograd.set_detect_anomaly(True)
 
+# Import dataset from GNN explainer paper.
+with open(f"../../data/gnn_explainer/{args.dataset[:4]}.pickle", "rb") as file:
+	data = pickle.load(file)
 
-# Import dataset from GNN explainer paper
-with open("../../data/gnn_explainer/{}.pickle".format(args.dataset[:4]), "rb") as f:
-	data = pickle.load(f)
-
-adj = torch.Tensor(data["adj"]).squeeze()       # Does not include self loops
+adj = torch.Tensor(data["adj"]).squeeze() # Does not include self loops.
 features = torch.Tensor(data["feat"]).squeeze()
 labels = torch.tensor(data["labels"]).squeeze()
 idx_train = torch.tensor(data["train_idx"])
 idx_test = torch.tensor(data["test_idx"])
-edge_index = dense_to_sparse(adj)       # Needed for pytorch-geo functions
+edge_index = dense_to_sparse(adj) # Needed for pytorch-geo functions.
 
-# Change to binary task: 0 if not in house, 1 if in house
+# Change to binary task: 0 if not in house, 1 if in house.
 if args.dataset == "syn1_binary":
 	labels[labels==2] = 1
 	labels[labels==3] = 1
 
-norm_adj = normalize_adj(adj)       # According to reparam trick from GCN paper
-
+# According to reparam trick from GCN paper.
+norm_adj = normalize_adj(adj)
 
 # Set up original model, get predictions
-model = GCNSynthetic(nfeat=features.shape[1], nhid=args.hidden, nout=args.hidden,
-					 nclass=len(labels.unique()), dropout=args.dropout)
+model = GCNSynthetic(
+	nfeat = features.shape[1],
+	nhid = args.hidden,
+	nout = args.hidden,
+	nclass = len(labels.unique()),
+	dropout = args.dropout
+)
 
-model.load_state_dict(torch.load("../../models/gcn_3layer_{}.pt".format(args.dataset)))
+model.load_state_dict(torch.load(f"../../models/gcn_3layer_{args.dataset}.pt"))
 model.eval()
 output = model(features, norm_adj)
 y_pred_orig = torch.argmax(output, dim=1)
-print("y_true counts: {}".format(np.unique(labels.numpy(), return_counts=True)))
-print("y_pred_orig counts: {}".format(np.unique(y_pred_orig.numpy(), return_counts=True)))      # Confirm model is actually doing something
-
+# Confirm model is actually doing something
+print(f"y_true counts: {np.unique(labels.numpy(), return_counts=True)}")
+print(f"y_pred_orig counts: {np.unique(y_pred_orig.numpy(), return_counts=True)}")
 
 # Get CF examples in test set
 test_cf_examples = []
@@ -75,21 +85,29 @@ for i in idx_test[:]:
 	best_loss = np.inf
 
 	for n in range(args.num_epochs):
-		sub_adj, sub_feat, sub_labels, node_dict = get_neighbourhood(int(i), edge_index, args.n_layers + 1, features, labels)
+		sub_adj, sub_feat, sub_labels, node_dict = get_neighbourhood(
+			node_idx = int(i),
+			edge_index = edge_index,
+			n_hops = args.n_layers + 1,
+			features = features,
+			labels = labels,
+		)
 		new_idx = node_dict[int(i)]
 
 		# Get CF adj, new prediction
 		num_nodes = sub_adj.shape[0]
 
-		# P_hat needs to be symmetric ==> learn vector representing entries in upper/lower triangular matrix and use to populate P_hat later
-		P_vec_size = int((num_nodes * num_nodes - num_nodes) / 2)  + num_nodes
+		# P_hat needs to be symmetric 
+		# ==> learn vector representing entries in upper/lower triangular matrix
+		# and use to populate P_hat later
+		P_vec_size = int((num_nodes * num_nodes - num_nodes) / 2) + num_nodes
 
 		# Randomly initialize P_vec in [-1, 1]
 		r1 = -1
 		r2 = 1
 		P_vec = torch.FloatTensor((r1 - r2) * torch.rand(P_vec_size) + r2)
-		P_hat_symm = create_symm_matrix_from_vec(P_vec, num_nodes)      # Ensure symmetry
-		P = (F.sigmoid(P_hat_symm) >= 0.5).float()      # threshold P_hat
+		P_hat_symm = create_symm_matrix_from_vec(P_vec, num_nodes) # Ensure symmetry
+		P = (F.sigmoid(P_hat_symm) >= 0.5).float() # threshold P_hat
 
 		# Get cf_adj, compute prediction for cf_adj
 		cf_adj = P * sub_adj
@@ -105,21 +123,36 @@ for i in idx_test[:]:
 
 		pred_cf = torch.argmax(model(sub_feat, cf_norm_adj), dim=1)[new_idx]
 		pred_orig = torch.argmax(model(sub_feat, normalize_adj(sub_adj)), dim=1)[new_idx]
-		loss_graph_dist = sum(sum(abs(cf_adj - sub_adj))) / 2      # Number of edges changed (symmetrical)
-		print("Node idx: {}, original pred: {}, cf pred: {}, graph loss: {}".format(i, pred_orig, pred_cf, loss_graph_dist))
+		# Number of edges changed (symmetrical)
+		loss_graph_dist = sum(sum(abs(cf_adj - sub_adj))) / 2
+		print(
+			f"Node idx: {i}, "
+			f"original pred: {pred_orig}, "
+			f"cf pred: {pred_cf}, "
+			f"graph loss: {loss_graph_dist}"
+		)
 
 		if (pred_cf != pred_orig) & (loss_graph_dist < best_loss):
 			best_loss = loss_graph_dist
 			print("best loss: {}".format(best_loss))
-			best_cf_example = [i.item(), new_idx.item(),
-				            cf_adj.detach().numpy(), sub_adj.detach().numpy(),
-				            pred_cf.item(), pred_orig.item(), sub_labels[new_idx].numpy(),
-				            sub_adj.shape[0], node_dict,
-				               loss_graph_dist.item()]
+			best_cf_example = [
+				i.item(), new_idx.item(),
+				cf_adj.detach().numpy(), sub_adj.detach().numpy(),
+				pred_cf.item(), pred_orig.item(), sub_labels[new_idx].numpy(),
+				sub_adj.shape[0], node_dict,
+				loss_graph_dist.item()
+			]
 	test_cf_examples.append(best_cf_example)
-	print("Time for {} epochs of one example: {:.4f}min".format(args.num_epochs, (time.time() - start)/60))
-print("Total time elapsed: {:.4f}min".format((time.time() - start)/60))
+	print(
+		f"Time for {args.num_epochs} epochs of one example: "
+		f"{(time.time() - start)/60:.4f}min"
+	)
+
+print(f"Total time elapsed: {(time.time() - start)/60:.4f}min")
 
 # Save CF examples in test set
-with safe_open("../results/random_perturb/{}_baseline_cf_examples_epochs{}".format(args.dataset, args.num_epochs), "wb") as f:
-		pickle.dump(test_cf_examples, f)
+with safe_open(
+	f"../results/random_perturb"
+	f"/{args.dataset}_baseline_cf_examples_epochs{args.num_epochs}", "wb"
+) as file:
+	pickle.dump(test_cf_examples, file)

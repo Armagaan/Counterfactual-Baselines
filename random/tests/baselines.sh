@@ -13,5 +13,5 @@ python tests/tests.py treecycles
 echo
 
 echo "<----- TREE-GRIDS ----->"
-python tests/tests.py treecycles
+python tests/tests.py treegrids
 echo

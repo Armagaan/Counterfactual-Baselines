@@ -76,11 +76,11 @@ for cf in cfs:
     # if: cf is []: cf wasn't found, hence skip to next iteration
     if cf == []:
         continue
-    # get cf[-1][5] initial prediction over that node in the subgraph
+    # get cf[-1][4] initial prediction over that node in the subgraph
     # We use [-1] because cfgnnexplanier stores information about the cfs in a list
     # (one entry per counterfactual edge set).
     # Each cf set is of better quality than the previous one.
-    original_prediction = cf[-1][5]
+    original_prediction = cf[-1][4]
     # just get cfs[-1][11] (which is the #edge-deletions)
     perturbations = cf[-1][11]
     # store this against the corresponding label in the dictionry
@@ -101,7 +101,7 @@ for label in range(NUMBER_OF_LABELS):
 print("\n====================")
 print("Per-label Explanation size:")
 for key, value in per_label_explanation_size.items(): # format: label: (mean, std)
-    print(f"{key}: {value[0]:.2f} +- {value[1]:.2f}")
+    print(f"{key}: {value[0]} +- {value[1]}")
 print()
 print(f"Nodes per predicted label in the eval-set:\n{NODES_PER_PREDICTED_LABEL_IN_EVAL_SET}\n")
 print(f"Nodes per post-perturbation-prediction in the eval-set:\n{nodes_per_prediction}\n")

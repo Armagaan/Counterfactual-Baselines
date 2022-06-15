@@ -123,7 +123,7 @@ class BAShapesDataset(DGLDataset):
         self.feat_dim = self.graphs[0].ndata['feat'].shape[1]
         self.targets = np.load(os.path.join(self.load_path, 'targets.pickle'), allow_pickle=True)
 
-
+# Used in scripts meant for training.
 def ba_shapes_preprocessing(dataset_dir):
     name = "BA_Shapes"
     data = np.load(os.path.join(dataset_dir, 'syn_data.pkl'), allow_pickle=True)

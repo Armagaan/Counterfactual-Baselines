@@ -231,9 +231,12 @@ class NodeExplainerEdgeMulti(torch.nn.Module):
         pred_label_dict = {}
         t_gid = []
         for gid in tqdm.tqdm(self.test_indices):
-            ori_pred = self.base_model(self.G_dataset.graphs[gid],
-                                       self.G_dataset.graphs[gid].ndata['feat'].float(),
-                                       self.G_dataset.graphs[gid].edata['weight'], self.G_dataset.targets[gid])[0]
+            ori_pred = self.base_model(
+                self.G_dataset.graphs[gid],
+                self.G_dataset.graphs[gid].ndata['feat'].float(),
+                self.G_dataset.graphs[gid].edata['weight'],
+                self.G_dataset.targets[gid]
+            )[0]
             ori_pred_label = torch.argmax(ori_pred)
             if self.args.dataset == 'citeseer':
                 ori_label = self.G_dataset.labels[gid]

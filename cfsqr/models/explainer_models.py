@@ -23,9 +23,11 @@ class GraphExplainerEdge(torch.nn.Module):
         else:
             self.fix_exp = None
 
-    def explain_nodes_gnn_stats(self):
+    def explain_nodes_gnn_stats(self, folder_path):
         exp_dict = {}  # {'gid': masked_adj, 'gid': mask_adj}
         num_dict = {}  # {'gid': exp_num, 'gid': exp_num}
+        pred_label_dict = {}
+        t_gid = []
         num=200
         for gid in tqdm.tqdm(self.test_indices[:num]):
             ori_pred = self.base_model(self.G_dataset.graphs[gid],
@@ -34,20 +36,38 @@ class GraphExplainerEdge(torch.nn.Module):
             pred_label = torch.round(ori_pred)
             ori_label = self.G_dataset.labels[gid]
             if pred_label == 1 and ori_label == 1:  # only explain why the graph is predicted as mutagenic
-                masked_adj, exp_num = self.explain(gid, ori_pred)
+                masked_adj, exp_num = self.explain(gid, ori_pred, folder_path)
                 exp_dict[gid] = masked_adj
                 num_dict[gid] = exp_num
+
+                t_gid.append(gid)
+                pred_label_dict[gid] = pred_label
         print('average number of exps:', sum(num_dict.values()) / len(num_dict.keys()))
         PN = self.compute_pn(exp_dict)
         PS = self.compute_ps(exp_dict)
         acc, pre, rec, f1 = self.compute_precision_recall(exp_dict)
+        
+        # ! Start: Testing code: Burouj
+        with open(f"{folder_path}/t_gid.pkl", "wb") as file:
+            pickle.dump(t_gid, file)
+
+        with open(f"{folder_path}/exp_dict.pkl", "wb") as file:
+            pickle.dump(exp_dict, file)
+
+        with open(f"{folder_path}/num_dict.pkl", "wb") as file:
+            pickle.dump(num_dict, file)
+        
+        with open(f"{folder_path}/pred_label_dict.pkl", "wb") as file:
+            pickle.dump(pred_label_dict, file)
+		# ! End
+
         print('PN', PN)
         print('PS', PS)
         print('FNS', 2 * PN * PS / (PN + PS))
         print('acc: ', acc, ' pre: ', pre, ' rec: ', rec, ' f1: ', f1)
         return PN, PS, 2 * PN * PS / (PN + PS), sum(num_dict.values()) / len(num_dict.keys()), acc, pre, rec, f1
 
-    def explain(self, gid, ori_pred):
+    def explain(self, gid, ori_pred, folder_path=None):
         # only generate exps for the correct predictions for now (to be consistent with GNN Explainer).
         explainer = ExplainModelGraph(
             graph=self.G_dataset.graphs[gid],
@@ -74,6 +94,10 @@ class GraphExplainerEdge(torch.nn.Module):
                 # print('bpr: ', 50 * bpr, 'l1', l1, 'loss', loss)
             loss.backward()
             optimizer.step()
+        
+        with open(f"{folder_path}/pred_proba.txt", "a") as file:
+            temp = pred2.clone().detach()
+            np.savetxt(file, temp.numpy())
 
         masked_adj = explainer.get_masked_adj()
         masked_adj = explainer.get_masked_adj()

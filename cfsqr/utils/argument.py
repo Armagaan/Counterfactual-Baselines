@@ -66,6 +66,7 @@ def arg_parse_exp_graph_mutag_0():
     parser.add_argument("--gam", dest="gam", type=float, default=.5, help="margin value for bpr loss")
     parser.add_argument("--mask_thresh", dest="mask_thresh", type=float, default=.5,
                         help="threshold to convert relaxed adj matrix to binary")
+    parser.add_argument("--output", dest="output", type=str, default="./", help="folder where pickled files and logs will be stored")
     return parser.parse_args()
 
 

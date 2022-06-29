@@ -1,11 +1,14 @@
 import os
+import sys
+
 import numpy as np
 import torch
+
 from utils.argument import arg_parse_exp_node_tree_cycles
 from models.explainer_models import NodeExplainerEdgeMulti
 from models.gcn import GCNNodeTreeCycles
-from utils.preprocessing.tree_cycles_preprocessing import TreeCyclesDataset
-import sys
+from utils.preprocessing.tree_cycles_preprocessing import \
+    TreeCyclesDataset, tree_cycles_preprocessing
 
 if __name__ == "__main__":
     torch.manual_seed(1000)
@@ -24,7 +27,8 @@ if __name__ == "__main__":
     test_indices = np.load('datasets/Eval-sets/eval-set-treecycles.pkl', allow_pickle=True)
     # * END
 
-    G_dataset = TreeCyclesDataset(load_path=os.path.join(model_path))
+    G_dataset = tree_cycles_preprocessing(dataset_dir="datasets/Tree_Cycles", hop_num=4)
+    # G_dataset = TreeCyclesDataset(load_path=os.path.join(model_path))
     # targets = np.load(os.path.join(model_path, 'targets.pickle'), allow_pickle=True)  # the target node to explain
     graphs = G_dataset.graphs
     labels = G_dataset.labels
@@ -33,8 +37,15 @@ if __name__ == "__main__":
         device = torch.device('cuda:%s' % exp_args.cuda)
     else:
         device = 'cpu'
-    base_model = GCNNodeTreeCycles(G_dataset.feat_dim, 32, num_classes=2, if_exp=True).to(device)
-    base_model.load_state_dict(torch.load(os.path.join(model_path, 'model.model')))
+    base_model = GCNNodeTreeCycles(
+        in_feats=G_dataset.feat_dim,
+        h_feats=20,
+        out_feats=20,
+        num_classes=2,
+        device=device,
+        if_exp=True
+    ).to(device)
+    base_model.load_state_dict(torch.load("cfgnn_model_weights/gcn_3layer_syn4.pt"))
     #  fix the base model
     for param in base_model.parameters():
         param.requires_grad = False

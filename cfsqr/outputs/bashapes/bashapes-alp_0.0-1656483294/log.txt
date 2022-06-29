@@ -1,9 +1,0 @@
-argument:
- Namespace(alp=0.0, cuda='0', dataset='BA_Shapes', gam=0.5, gpu=False, lam=500, lr=0.01, mask_thresh=0.5, model_path='log/BA_Shapes_logs', num_epochs=2000, opt='adam', output='outputs/bashapes/bashapes-alp_0.0-1656483294', weight_decay=0.005)
-processing
-average number of exps: 7.605263157894737
-PN 0.8947368421052632
-PS 0.3026315789473684
-PNS 0.45228455754771546
-ave exp 7.605263157894737
-acc:  0.9296831789047405  pre:  1.0  rec:  0.06963316870131644  f1:  0.11705937953721801

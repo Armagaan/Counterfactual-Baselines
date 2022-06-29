@@ -1,9 +1,0 @@
-argument:
- Namespace(alp=0.0, cuda='0', dataset='Tree_Grids', gam=0.5, gpu=False, lam=500, lr=0.05, mask_thresh=0.1, model_path='log/Tree_Grids_logs', num_epochs=500, opt='adam', output='outputs/treegrids/treegrids-alp_0.0-1656491030', weight_decay=0.005)
-processing
-average number of exps: 14.875968992248062
-PN 0.46511627906976744
-PS 0.43410852713178294
-PNS 0.4490777866880513
-ave exp 14.875968992248062
-acc:  0.9518476482103271  pre:  1.0  rec:  0.5157339280092573  f1:  0.6690654677930237

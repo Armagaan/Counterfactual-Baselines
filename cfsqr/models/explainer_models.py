@@ -216,7 +216,8 @@ class NodeExplainerEdgeMulti(torch.nn.Module):
     def __init__(self, base_model, G_dataset, test_indices, args, fix_exp=None):
         super(NodeExplainerEdgeMulti, self).__init__()
         self.base_model = base_model
-        self.base_model.eval()
+        # print(f"Line 219: {self.base_model.training}")
+        # self.base_model.eval()
         self.G_dataset = G_dataset
         self.test_indices = test_indices
         self.args = args
@@ -304,6 +305,10 @@ class NodeExplainerEdgeMulti(torch.nn.Module):
             explainer = explainer.cuda()
         optimizer = torch.optim.Adam(explainer.parameters(), lr=self.args.lr, weight_decay=0)
         explainer.train()
+        # running the above line sets the blackbox in training mode as well.
+        # we need to freeze it again.
+        explainer.base_model.training = False
+
         for epoch in range(self.args.num_epochs):
             explainer.zero_grad()
             pred1, pred2 = explainer()
@@ -435,6 +440,7 @@ class ExplainModelNodeMulti(torch.nn.Module):
         self.graph = graph
         self.num_nodes = len(self.graph.nodes())
         self.base_model = base_model
+        # print(f"Line 439: {self.base_model.training}")
         self.target_node = target_node
         self.args = args
         self.adj_mask = self.construct_adj_mask()

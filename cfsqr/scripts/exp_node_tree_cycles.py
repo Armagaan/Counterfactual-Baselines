@@ -46,10 +46,32 @@ if __name__ == "__main__":
         if_exp=True
     ).to(device)
     base_model.load_state_dict(torch.load("cfgnn_model_weights/gcn_3layer_syn4.pt"))
+    
     #  fix the base model
+    # * Very important: If not done the blackbox weights start altering during explanation.
     for param in base_model.parameters():
         param.requires_grad = False
+    # * Fixes the dropout layer
+    base_model.eval()
 
+    # predictions = list()
+    # for gid in test_indices:
+    #     # mat_size = int(math.sqrt(len(graphs[gid].edata["weight"])))
+    #     # edge_weights = graphs[gid].edata["weight"].reshape(mat_size, mat_size)
+    #     # edge_weights = normalize_adj(edge_weights)
+
+    #     probability = base_model(
+    #         g=graphs[gid],
+    #         in_feat=graphs[gid].ndata["feat"].float(),
+    #         # e_weight=edge_weights,
+    #         e_weight=graphs[gid].edata["weight"],
+    #         target_node=targets[gid]
+    #     )[0]
+    #     predictions.append(torch.argmax(probability))
+    # predictions = torch.Tensor(predictions)
+    # print(torch.unique(predictions, return_counts=True))
+    # exit(0)
+    
     # Create explainer
     explainer = NodeExplainerEdgeMulti(
         base_model=base_model,

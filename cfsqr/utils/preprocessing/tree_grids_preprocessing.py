@@ -141,17 +141,21 @@ class TreeGridsDataset(DGLDataset):
         self.targets = np.load(os.path.join(self.load_path, 'targets.pickle'), allow_pickle=True)
 
 
-def tree_grids_preprocessing(dataset_dir):
-    name = "Tree_grids"
+def tree_grids_preprocessing(dataset_dir, hop_num=4):
+    name = "Tree_Grids"
     # assign path
     data = np.load(os.path.join(dataset_dir, 'syn_data.pkl'), allow_pickle=True)
-    adj = np.array(data[0], dtype='float32')
+    # adj = np.array(data[0], dtype='float32')
+    # feats = data[1]
+    # y_train = data[2]
+    # y_val = data[3]
+    # y_test = data[4]
+    # e_labels = data[8]
+    # e_labels = np.array(np.maximum(e_labels, e_labels.T), dtype="float32")  # make symmetric
+    # node_labels = np.array(np.logical_or(y_train, np.logical_or(y_val, y_test)), dtype=int)
+    adj = data[0]
     feats = data[1]
-    y_train = data[2]
-    y_val = data[3]
-    y_test = data[4]
-    e_labels = data[8]
-    e_labels = np.array(np.maximum(e_labels, e_labels.T), dtype="float32")
-    node_labels = np.array(np.logical_or(y_train, np.logical_or(y_val, y_test)), dtype=int)
-    G_dataset = TreeGridsDataset(adj, node_labels, e_labels, hop_num=3, feat_dim=10)
+    node_labels = data[2]
+    e_labels = data[3]
+    G_dataset = TreeGridsDataset(adj, node_labels, e_labels, hop_num=hop_num, feat_dim=10)
     return G_dataset

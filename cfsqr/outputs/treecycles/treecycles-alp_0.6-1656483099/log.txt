@@ -1,0 +1,9 @@
+argument:
+ Namespace(alp=0.6, cuda='0', dataset='Tree_Cycles', gam=0.5, gpu=False, lam=500, lr=0.05, mask_thresh=0.1, model_path='log/Tree_Cycles_logs', num_epochs=500, opt='adam', output='outputs/treecycles/treecycles-alp_0.6-1656483099', weight_decay=0.005)
+processing
+average number of exps: 11.597222222222221
+PN 0.5972222222222222
+PS 0.7083333333333334
+PNS 0.6480496453900709
+ave exp 11.597222222222221
+acc:  0.9642586406987655  pre:  1.0  rec:  0.7675416561043995  f1:  0.8537934856807213

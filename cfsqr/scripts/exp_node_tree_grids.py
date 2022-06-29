@@ -17,7 +17,7 @@ if __name__ == "__main__":
     exp_args = arg_parse_exp_node_tree_grids()
     print("argument:\n", exp_args)
     model_path = exp_args.model_path
-    train_indices = np.load(os.path.join(model_path, 'train_indices.pickle'), allow_pickle=True)
+    # train_indices = np.load(os.path.join(model_path, 'train_indices.pickle'), allow_pickle=True)
 
     # * START: Updated by Burouj: 17 May, 22
     # Author's eval set

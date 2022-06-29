@@ -115,18 +115,35 @@ class GCNNodeBAShapes(torch.nn.Module):
             dim=0
         )[:-1]
         target_node = target_node + x
+        mat_size = int(math.sqrt(len(e_weight)))
+        normalized_e_weight = self.normalize_adj(e_weight.reshape(mat_size, mat_size))
 
-        h1 = relu(self.gc1(in_feat, e_weight))
+        h1 = relu(self.gc1(in_feat, normalized_e_weight))
         h1 = dropout(input=h1, p=self.dropout, training=self.training)
-        h2 = relu(self.gc2(h1, e_weight))
+        h2 = relu(self.gc2(h1, normalized_e_weight))
         h2 = dropout(input=h2, p=self.dropout, training=self.training)
-        h3 = self.gc3(h2, e_weight)
+        h3 = self.gc3(h2, normalized_e_weight)
         h4 = self.lin(torch.cat((h1, h2, h3), dim=1))
         
         if self.if_exp:  # if in the explanation mod, should add softmax layer
             h4 = softmax(h4, dim=1)
         g.ndata['h'] = h4
         return g.ndata['h'][target_node]
+
+    def get_degree_matrix(self, adj):
+        return torch.diag(sum(adj))
+
+    def normalize_adj(self, adj):
+        # Normalize adjacancy matrix according to reparam trick in GCN paper
+        A_tilde = adj + torch.eye(adj.shape[0])
+        D_tilde = self.get_degree_matrix(A_tilde)
+        # Raise to power -1/2, set all infs to 0s
+        D_tilde_exp = D_tilde ** (-1 / 2)
+        D_tilde_exp[torch.isinf(D_tilde_exp)] = 0
+
+        # Create norm_adj = (D + I)^(-1/2) * (A + I) * (D + I) ^(-1/2)
+        norm_adj = torch.mm(torch.mm(D_tilde_exp, A_tilde), D_tilde_exp)
+        return norm_adj
 
 
 class GCNNodeTreeCycles(torch.nn.Module):
@@ -156,18 +173,35 @@ class GCNNodeTreeCycles(torch.nn.Module):
             dim=0
         )[:-1]
         target_node = target_node + x
+        mat_size = int(math.sqrt(len(e_weight)))
+        normalized_e_weight = self.normalize_adj(e_weight.reshape(mat_size, mat_size))
 
-        h1 = relu(self.gc1(in_feat, e_weight))
+        h1 = relu(self.gc1(in_feat, normalized_e_weight))
         h1 = dropout(input=h1, p=self.dropout, training=self.training)
-        h2 = relu(self.gc2(h1, e_weight))
+        h2 = relu(self.gc2(h1, normalized_e_weight))
         h2 = dropout(input=h2, p=self.dropout, training=self.training)
-        h3 = self.gc3(h2, e_weight)
+        h3 = self.gc3(h2, normalized_e_weight)
         h4 = self.lin(torch.cat((h1, h2, h3), dim=1))
         
         if self.if_exp:  # if in the explanation mod, should add softmax layer
             h4 = softmax(h4, dim=1)
         g.ndata['h'] = h4
         return g.ndata['h'][target_node]
+
+    def get_degree_matrix(self, adj):
+        return torch.diag(sum(adj))
+
+    def normalize_adj(self, adj):
+        # Normalize adjacancy matrix according to reparam trick in GCN paper
+        A_tilde = adj + torch.eye(adj.shape[0])
+        D_tilde = self.get_degree_matrix(A_tilde)
+        # Raise to power -1/2, set all infs to 0s
+        D_tilde_exp = D_tilde ** (-1 / 2)
+        D_tilde_exp[torch.isinf(D_tilde_exp)] = 0
+
+        # Create norm_adj = (D + I)^(-1/2) * (A + I) * (D + I) ^(-1/2)
+        norm_adj = torch.mm(torch.mm(D_tilde_exp, A_tilde), D_tilde_exp)
+        return norm_adj
 
 
 class GCNNodeTreeGrids(torch.nn.Module):
@@ -197,18 +231,35 @@ class GCNNodeTreeGrids(torch.nn.Module):
             dim=0
         )[:-1]
         target_node = target_node + x
+        mat_size = int(math.sqrt(len(e_weight)))
+        normalized_e_weight = self.normalize_adj(e_weight.reshape(mat_size, mat_size))
 
-        h1 = relu(self.gc1(in_feat, e_weight))
+        h1 = relu(self.gc1(in_feat, normalized_e_weight))
         h1 = dropout(input=h1, p=self.dropout, training=self.training)
-        h2 = relu(self.gc2(h1, e_weight))
+        h2 = relu(self.gc2(h1, normalized_e_weight))
         h2 = dropout(input=h2, p=self.dropout, training=self.training)
-        h3 = self.gc3(h2, e_weight)
+        h3 = self.gc3(h2, normalized_e_weight)
         h4 = self.lin(torch.cat((h1, h2, h3), dim=1))
         
         if self.if_exp:  # if in the explanation mod, should add softmax layer
             h4 = softmax(h4, dim=1)
         g.ndata['h'] = h4
         return g.ndata['h'][target_node]
+
+    def get_degree_matrix(self, adj):
+        return torch.diag(sum(adj))
+
+    def normalize_adj(self, adj):
+        # Normalize adjacancy matrix according to reparam trick in GCN paper
+        A_tilde = adj + torch.eye(adj.shape[0])
+        D_tilde = self.get_degree_matrix(A_tilde)
+        # Raise to power -1/2, set all infs to 0s
+        D_tilde_exp = D_tilde ** (-1 / 2)
+        D_tilde_exp[torch.isinf(D_tilde_exp)] = 0
+
+        # Create norm_adj = (D + I)^(-1/2) * (A + I) * (D + I) ^(-1/2)
+        norm_adj = torch.mm(torch.mm(D_tilde_exp, A_tilde), D_tilde_exp)
+        return norm_adj
 
 
 class GCNNodeCiteSeer(torch.nn.Module):

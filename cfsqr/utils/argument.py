@@ -69,6 +69,28 @@ def arg_parse_exp_graph_mutag_0():
     parser.add_argument("--output", dest="output", type=str, default="./", help="folder where pickled files and logs will be stored")
     return parser.parse_args()
 
+def arg_parse_exp_graph_nci1():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", dest="dataset", type=str, default="Mutagenicity_0",
+                        help="choose a graph explanation task")
+    parser.add_argument("--model_path", dest="model_path", type=str, default="log/Mutagenicity_0_logs",
+                        help="path to the model that need to be explained")
+    parser.add_argument("--gpu", dest="gpu", action="store_true", help="whether to use gpu")
+    parser.add_argument("--cuda", dest="cuda", type=str, default='0', help="which cuda")
+    parser.add_argument("--weight_decay", dest="weight_decay", type=float, default='0.005', help="L2 norm to the wights")
+    parser.add_argument("--opt", dest="opt", type=str, default="adam", help="optimizer")
+    parser.add_argument("--lr", dest="lr", type=float, default=0.05, help="learning rate")
+    parser.add_argument("--num_epochs", dest="num_epochs", type=int, default=500, help="number of the training epochs")
+    parser.add_argument("--lam", dest="lam", type=float, default=1000,
+                        help="hyper param control the trade-off between "
+                             "the explanation complexity and explanation strength")
+    parser.add_argument("--alp", dest="alp", type=float, default=0.6,
+                        help="hyper param control factual and counterfactual, 1 is totally factual")
+    parser.add_argument("--gam", dest="gam", type=float, default=.5, help="margin value for bpr loss")
+    parser.add_argument("--mask_thresh", dest="mask_thresh", type=float, default=.5,
+                        help="threshold to convert relaxed adj matrix to binary")
+    parser.add_argument("--output", dest="output", type=str, default="./", help="folder where pickled files and logs will be stored")
+    return parser.parse_args()
 
 def arg_parse_exp_node_ba_shapes():
     parser = argparse.ArgumentParser()

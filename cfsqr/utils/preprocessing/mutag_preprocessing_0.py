@@ -1,15 +1,18 @@
-"""Read the Mutag dataset and create the graphx"""
-
-import numpy as np
+""" Read the Mutag dataset and create the graphx.
+"""
 import os
+
 import dgl
-from dgl.data import DGLDataset
-import torch
 from dgl import save_graphs, load_graphs
+from dgl.data import DGLDataset
+import numpy as np
+import torch
+
 from utils.common_utils import read_file
 
 
 class MutagDataset0(DGLDataset):
+
     def __init__(self, edges=None, graph_indicator=None, node_labels=None, edge_labels=None, graph_labels=None, load_path=None):
         super().__init__(name='mutag0')
         if load_path:

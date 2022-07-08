@@ -1,16 +1,14 @@
-"""Read the Mutag dataset and create the graphx"""
-
-import numpy as np
+""" Read the Mutag dataset and create the graphx.
+"""
 import os
+import os.path as osp
+
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
 import torch
 from torch_geometric.data import Dataset, Data
 from torch_geometric.utils import to_networkx, to_dense_adj
-import networkx as nx
-import pickle
-import matplotlib.pyplot as plt
-import pandas as pd
-import random
-import os.path as osp
 
 # import dgl
 # from dgl.data import DGLDataset
@@ -33,6 +31,7 @@ def read_file(f_path):
             for item in items:
                 f_list[-1].append(int(item))
     return np.array(f_list).squeeze()
+
 
 class NCI1Dataset(Dataset):
     def __init__(self, root, transform=None, pre_transform=None, pre_filter=None):

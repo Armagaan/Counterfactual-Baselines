@@ -209,6 +209,10 @@ def main():
     else:
         print("Using CPU")
 
+    # with open(f"prog_args_{prog_args.dataset}.pkl", "wb") as file:
+    #     pickle.dump(prog_args, file)
+    # exit(0)
+
     # Load a model checkpoint
     ckpt = io_utils.load_ckpt(prog_args)
     cg_dict = ckpt["cg"] # get computation graph

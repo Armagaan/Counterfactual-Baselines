@@ -192,7 +192,7 @@ def main():
         print("Using CPU")
 
     # Load a model checkpoint
-    ckpt = io_utils.load_ckpt(prog_args)
+    ckpt = torch.load(f"data/{prog_args.dataset}/eval_as_eval.pt") #todo: Automate this.
     cg_dict = ckpt["cg"] # get computation graph
     input_dim = cg_dict["feat"].shape[2] 
     num_classes = cg_dict["pred"].shape[2]
@@ -225,14 +225,12 @@ def main():
             # class weight in CE loss for handling imbalanced label classes
             prog_args.loss_weight = torch.tensor([1.0, 5.0], dtype = torch.float).to(device) 
         # Explain Node prediction
-        model = models.GcnEncoderNode(
-            input_dim = input_dim,
-            hidden_dim = prog_args.hidden_dim,
-            embedding_dim = prog_args.output_dim,
-            label_dim = num_classes,
-            num_layers = prog_args.num_gc_layers,
-            bn = prog_args.bn,
-            args = prog_args,
+        model = models.GCNSynthetic(
+            nfeat=input_dim,
+            nhid=prog_args.hidden_dim,
+            nout=prog_args.output_dim,
+            nclass=num_classes,
+            dropout=0.0
         )
     
     if prog_args.gpu:
@@ -248,7 +246,7 @@ def main():
     adj = torch.from_numpy(cg_dict["adj"]).float()
     label = torch.from_numpy(cg_dict["label"][0]).long()
     model.eval()
-    preds, _ = model(features, adj)
+    preds = model(features, adj)
     _, pred_label = torch.max(preds[0], dim=1)
     neg_nodes = np.where(pred_label.detach().numpy() != label)[0]
     ce = torch.nn.CrossEntropyLoss(reduction='none')
@@ -260,7 +258,7 @@ def main():
 
     def evaluate_adj(node_idx_new, feat, adj, _label, losses, corrects):
         with torch.no_grad():
-            pred, _ = model(feat, adj)
+            pred = model(feat, adj)
             loss = ce(pred[0], _label)
             _, pred_label = torch.max(pred[0], 1)
             correct = (pred_label[node_idx_new] == _label[node_idx_new]).float().sum()

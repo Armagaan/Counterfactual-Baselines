@@ -2,4 +2,6 @@ log
 distillation
 ckpt
 explanation
+data
+temp
 __pycache__

@@ -209,8 +209,12 @@ def main():
     else:
         print("Using CPU")
 
+    # with open(f"prog_args_{prog_args.dataset}.pkl", "wb") as file:
+    #     pickle.dump(prog_args, file)
+    # exit(0)
+
     # Load a model checkpoint
-    ckpt = io_utils.load_ckpt(prog_args)
+    ckpt = torch.load(f"data/{prog_args.dataset}/eval_as_eval.pt") #todo: Automate this: eval_as_eval and eval_as_train.
     cg_dict = ckpt["cg"] # get computation graph
     input_dim = cg_dict["feat"].shape[2] 
     num_classes = cg_dict["pred"].shape[2]
@@ -242,14 +246,12 @@ def main():
             # class weight in CE loss for handling imbalanced label classes
             prog_args.loss_weight = torch.tensor([1.0, 5.0], dtype=torch.float).to(device) 
         # Explain Node prediction
-        model = models.GcnEncoderNode(
-            input_dim=input_dim,
-            hidden_dim=prog_args.hidden_dim,
-            embedding_dim=prog_args.output_dim,
-            label_dim=num_classes,
-            num_layers=prog_args.num_gc_layers,
-            bn=prog_args.bn,
-            args=prog_args,
+        model = models.GCNSynthetic(
+            nfeat=input_dim,
+            nhid=prog_args.hidden_dim,
+            nout=prog_args.output_dim,
+            nclass=num_classes,
+            dropout=0.0
         )
     if prog_args.gpu:
         model = model.to(device) 
@@ -260,7 +262,7 @@ def main():
     adj = torch.from_numpy(cg_dict["adj"]).float()
     label = torch.from_numpy(cg_dict["label"]).long()
     model.eval()
-    preds, _ = model(feat, adj)
+    preds = model(feat, adj)
     # ce = torch.nn.CrossEntropyLoss(reduction='none')
     ce = lambda x,y: F.cross_entropy(x, y, reduction='none')
     loss = ce(preds[0], label[0])
@@ -277,7 +279,7 @@ def main():
         masked_adj = torch.from_numpy(cg_dict["adj"]).float()
         masked_adj[0,x,y] = 0
         masked_adj[0,y,x] = 0
-        m_preds, _ = model(feat, masked_adj)
+        m_preds = model(feat, masked_adj)
         m_loss = ce(m_preds[0], label[0])
         masked_loss += [m_loss]
 
@@ -322,7 +324,7 @@ def main():
             sub_G3.add_nodes_from(list(G.nodes))
             sub_G3.add_edges_from(sub_G2.edges)
             masked_adj = torch.from_numpy(nx.to_numpy_matrix(sub_G3, weight=None)).unsqueeze(0).float()
-            m_preds, _ = model(feat, masked_adj)
+            m_preds = model(feat, masked_adj)
             m_loss = ce(m_preds[0], label[0])
             x,y = sorted_edges[e]
             if m_loss[node] > best_loss:

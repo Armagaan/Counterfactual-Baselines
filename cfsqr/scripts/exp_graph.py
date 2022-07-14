@@ -39,4 +39,5 @@ if __name__ == "__main__":
         # fix_exp=15
     )
 
-    explainer.explain_nodes_gnn_stats()
+    FOLDER_PATH = exp_args.output
+    explainer.explain_nodes_gnn_stats(FOLDER_PATH)

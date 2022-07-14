@@ -1,0 +1,104 @@
+<----- BA-SHAPES ALPHA=0.0 ----->
+Nodes per label: {'label-2': 30, 'label-1': 29, 'label-3': 17}
+
+Per-label explanation size:
+label-2: 5.4 +- 1.1430952132988164
+label-1: 3.3448275862068964 +- 0.5430350257939179
+label-3: 1.7058823529411764 +- 0.8921029934178295
+label-0: None +- None
+
+Explanation size:
+3.79 +- 1.70
+
+Per-label fidelity:
+label-2: 0.0
+label-1: 0.0
+label-3: 0.0
+
+Fidelity:
+0.0
+
+<----- BA-SHAPES ALPHA=0.6 ----->
+Nodes per label: {'label-2': 30, 'label-1': 29, 'label-3': 17}
+
+Per-label explanation size:
+label-2: 3.6 +- 1.1135528725660042
+label-1: 3.0 +- 0.2626128657194451
+label-3: 2.8823529411764706 +- 1.1314931800983143
+label-0: None +- None
+
+Explanation size:
+3.21 +- 0.95
+
+Per-label fidelity:
+label-2: 0.0
+label-1: 0.0
+label-3: 0.0
+
+Fidelity:
+0.0
+
+<----- TREE-CYCLES ALPHA=0.0 ----->
+Nodes per label: {'label-1': 72}
+
+Per-label explanation size:
+label-1: 7.333333333333333 +- 3.640054944640259
+label-0: None +- None
+
+Explanation size:
+7.33 +- 3.64
+
+Per-label fidelity:
+label-1: 0.0
+
+Fidelity:
+0.0
+
+<----- TREE-CYCLES ALPHA=0.6 ----->
+Nodes per label: {'label-1': 72}
+
+Per-label explanation size:
+label-1: 6.486111111111111 +- 3.685531227936994
+label-0: None +- None
+
+Explanation size:
+6.49 +- 3.69
+
+Per-label fidelity:
+label-1: 0.0
+
+Fidelity:
+0.0
+
+<----- TREE-GRIDS ALPHA=0.0 ----->
+Nodes per label: {'label-1': 129}
+
+Per-label explanation size:
+label-1: 11.744186046511627 +- 4.864487783080896
+label-0: None +- None
+
+Explanation size:
+11.74 +- 4.86
+
+Per-label fidelity:
+label-1: 0.0
+
+Fidelity:
+0.0
+
+<----- TREE-GRIDS ALPHA=0.6 ----->
+Nodes per label: {'label-1': 129}
+
+Per-label explanation size:
+label-1: 8.891472868217054 +- 3.96543263342023
+label-0: None +- None
+
+Explanation size:
+8.89 +- 3.97
+
+Per-label fidelity:
+label-1: 0.007751937984496138
+
+Fidelity:
+0.007751937984496138
+

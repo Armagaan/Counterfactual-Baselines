@@ -233,6 +233,7 @@ def main():
             nout=prog_args.output_dim,
             nclass=num_classes,
             dropout=0.0
+            device=device
         )
     
     if prog_args.gpu:

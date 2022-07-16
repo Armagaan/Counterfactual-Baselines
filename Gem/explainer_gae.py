@@ -31,6 +31,7 @@ parser.add_argument('--output', type=str, default=None, help='Path of output dir
 parser.add_argument('--load_checkpoint', default=None, help='Load parameters from checkpoint.')
 parser.add_argument('--save_checkpoint', default=None, help='Save parameters to checkpoint.')
 parser.add_argument('--gpu', action='store_true')
+parser.add_argument('--evalset', type=str, default='eval', help='Transductive ckpt (train) or Inductive ckpt (eval)')
 
 args = parser.parse_args()
 
@@ -82,7 +83,7 @@ def sparse_mx_to_torch_sparse_tensor(sparse_mx):
 
 def main():
     with torch.no_grad():
-        ckpt = torch.load('ckpt/%s_base_h20_o20.pth.tar'%(args.dataset))
+        ckpt = torch.load(f"data/{args.dataset}/eval_as_{args.evalset}.pt")
         cg_dict = ckpt["cg"] # get computation graph
         input_dim = cg_dict["feat"].shape[2]
         adj = cg_dict["adj"][0]

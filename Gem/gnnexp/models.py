@@ -659,8 +659,9 @@ class GCNSynthetic(nn.Module):
     """
     3-layer GCN used in GNN Explainer synthetic tasks, including
     """
-    def __init__(self, nfeat, nhid, nout, nclass, dropout):
+    def __init__(self, nfeat, nhid, nout, nclass, dropout, device='cpu'):
         super(GCNSynthetic, self).__init__()
+        self.device = device
 
         self.gc1 = GraphConvolution(nfeat, nhid)
         self.gc2 = GraphConvolution(nhid, nhid)
@@ -669,8 +670,8 @@ class GCNSynthetic(nn.Module):
         self.dropout = dropout
 
     def forward(self, x, adj):
-        x = x.squeeze(0)
-        adj = adj.squeeze(0)
+        x = x.squeeze(0).to(self.device)
+        adj = adj.squeeze(0).to(self.device)
         norm_adj = self._normalize_adj(adj)
 
         x1 = F.relu(self.gc1(x, norm_adj))
@@ -692,7 +693,11 @@ class GCNSynthetic(nn.Module):
 
     def _normalize_adj(self, adj):
         # Normalize adjacancy matrix according to reparam trick in GCN paper
-        A_tilde = adj + torch.eye(adj.shape[0])
+        if torch.sum(torch.diag(adj) - torch.ones(adj.shape[0])) != 0:
+            A_tilde = adj + torch.eye(adj.shape[0]).to(self.device)
+        else:
+            # The adjacency matrix already has self loops.
+            A_tilde = adj
         D_tilde = self._get_degree_matrix(A_tilde)
         # Raise to power -1/2, set all infs to 0s
         D_tilde_exp = D_tilde ** (-1 / 2)

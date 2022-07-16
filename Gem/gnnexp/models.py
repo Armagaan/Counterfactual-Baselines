@@ -693,7 +693,11 @@ class GCNSynthetic(nn.Module):
 
     def _normalize_adj(self, adj):
         # Normalize adjacancy matrix according to reparam trick in GCN paper
-        A_tilde = adj + torch.eye(adj.shape[0]).to(self.device)
+        if torch.sum(torch.diag(adj) - torch.ones(adj.shape[0])) != 0:
+            A_tilde = adj + torch.eye(adj.shape[0]).to(self.device)
+        else:
+            # The adjacency matrix already has self loops.
+            A_tilde = adj
         D_tilde = self._get_degree_matrix(A_tilde)
         # Raise to power -1/2, set all infs to 0s
         D_tilde_exp = D_tilde ** (-1 / 2)

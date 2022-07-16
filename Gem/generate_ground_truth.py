@@ -150,6 +150,7 @@ def arg_parse():
     parser.add_argument('--top_k', type=int, default=None, help='Keep k edges of prediction.')
     parser.add_argument('--threshold', type=float, default=None, help='Keep k edges of prediction.')
     parser.add_argument('--output', type=str, default=None, help='output path.')
+    parser.add_argument('--evalset', type=str, default='eval', help='Transductive ckpt (train) or Inductive ckpt (eval)')
 
     # TODO: Check argument usage
     parser.set_defaults(
@@ -214,7 +215,7 @@ def main():
     # exit(0)
 
     # Load a model checkpoint
-    ckpt = torch.load(f"data/{prog_args.dataset}/eval_as_eval.pt") #todo: Automate this: eval_as_eval and eval_as_train.
+    ckpt = torch.load(f"data/{prog_args.dataset}/eval_as_{prog_args.evalset}.pt")
     cg_dict = ckpt["cg"] # get computation graph
     input_dim = cg_dict["feat"].shape[2] 
     num_classes = cg_dict["pred"].shape[2]

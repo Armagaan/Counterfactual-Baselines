@@ -151,6 +151,7 @@ def arg_parse():
     parser.add_argument('--distillation', type=str, default=None, help='Path of distillation.')
     parser.add_argument('--exp_out', type=str, default=None, help='Path of explainer output.')
     parser.add_argument('--test_out', type=str, default=None, help='Path of test output.')
+    parser.add_argument('--evalset', type=str, default='eval', help='Transductive ckpt (train) or Inductive ckpt (eval)')
 
     # TODO: Check argument usage
     parser.set_defaults(
@@ -193,7 +194,7 @@ def main():
         print("Using CPU")
 
     # Load a model checkpoint
-    ckpt = torch.load(f"data/{prog_args.dataset}/eval_as_eval.pt") #todo: Automate this.
+    ckpt = torch.load(f"data/{prog_args.dataset}/eval_as_{prog_args.evalset}.pt")
     cg_dict = ckpt["cg"] # get computation graph
     input_dim = cg_dict["feat"].shape[2] 
     num_classes = cg_dict["pred"].shape[2]

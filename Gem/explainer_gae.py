@@ -82,7 +82,7 @@ def sparse_mx_to_torch_sparse_tensor(sparse_mx):
 
 def main():
     with torch.no_grad():
-        ckpt = torch.load('ckpt/%s_base_h20_o20.pth.tar'%(args.dataset))
+        ckpt = torch.load(f"data/{args.dataset}/eval_as_eval.pt")
         cg_dict = ckpt["cg"] # get computation graph
         input_dim = cg_dict["feat"].shape[2]
         adj = cg_dict["adj"][0]

@@ -3,6 +3,7 @@
 """
 import argparse
 import os
+import time
 
 import sklearn.metrics as metrics
 
@@ -312,6 +313,7 @@ def main():
     gnnexp_result_path = os.path.join('explanation', 'gnnexp', io_utils.gen_explainer_prefix(prog_args))
     valid_node_idxs = []
     
+    data_original = dict()
     for node_idx in node_idxs:
         if not os.path.exists("explanation/%s/node%d_pred.csv"%(prog_args.exp_out, node_idx)):
             continue
@@ -367,6 +369,22 @@ def main():
             ours_losses,
             ours_corrects
         )
+
+        # For computing baselines.
+        data_original[node_idx] = {
+            'node_idx_new':node_idx_new,
+            'sub_feat':sub_feat,
+            'org_adj':org_adj,
+            'sub_label':sub_label,
+            'org_losses':org_losses,
+            'org_corrects':org_corrects
+        }
+
+        FOLDER = f"output/{prog_args.dataset}/{int(time.time())}"
+        os.makedirs(FOLDER, exist_ok=True)
+        with open(f"{FOLDER}/original_sub_data.pkl", "wb") as file:
+            pickle.dump(data_original, file)
+
         fname = 'masked_adj_' + ('node_idx_'+str()+'graph_idx_'+str(0)+'.ckpt')
         gnnexp_data = torch.load(os.path.join(gnnexp_result_path, 'masked_adj_node_idx_%sgraph_idx_0.ckpt' % node_idx), map_location=device)
         # gnnexp_adj = torch.from_numpy(gnnexp_data['adj']).float().unsqueeze(0)

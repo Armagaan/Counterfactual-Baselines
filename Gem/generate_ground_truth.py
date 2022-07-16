@@ -253,7 +253,7 @@ def main():
             nout=prog_args.output_dim,
             nclass=num_classes,
             dropout=0.0,
-            device=prog_args.cuda
+            device=device
         )
 
     model.load_state_dict(ckpt["model_state"])

@@ -59,7 +59,7 @@ test_set_indices = eval_set[KEY]
 ckpt_treegrids["cg"]["train_idx"] = train_set_indices
 ckpt_treegrids["cg"]["test_idx"] = test_set_indices
 os.makedirs(f"../data/syn5", exist_ok=True)
-torch.save(ckpt_treegrids, f"../data/syn5/eval_as_train.pt")
+torch.save(ckpt_treegrids, f"data/syn5/eval_as_train.pt")
 
 # Our eval set as the validation set
 train_set_indices = [i for i in range(treegrids_cfgnn['labels'].shape[1]) if i not in eval_set[KEY]]
@@ -67,7 +67,7 @@ test_set_indices = eval_set[KEY]
 ckpt_treegrids["cg"]["train_idx"] = train_set_indices
 ckpt_treegrids["cg"]["test_idx"] = test_set_indices
 os.makedirs(f"../data/syn5", exist_ok=True)
-torch.save(ckpt_treegrids, f"../data/syn5/eval_as_eval.pt")
+torch.save(ckpt_treegrids, f"data/syn5/eval_as_eval.pt")
 
 print("Checkpoint saved in the folder: data/syn5")
 

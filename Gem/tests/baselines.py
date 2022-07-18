@@ -13,7 +13,7 @@ from models import GCNSynthetic
 if len(sys.argv) != 3:
     print("\nUSAGE: python tests/baselines.py [DATASET] [EVALMODE]")
     print("[DATASET]: syn1, syn4, syn5")
-    print("[EVALMODE]: train, eval")
+    print("[EVALMODE]: train, eval\n")
     exit(1)
 
 ## ===== CONSTANTS =====

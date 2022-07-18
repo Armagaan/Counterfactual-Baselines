@@ -1,4 +1,8 @@
-"""Create a checkpoint for use in gem's scripts."""
+"""Create a checkpoint for use in GEM's scripts.
+USAGE: python tests/create_checkpoint.py [DATASET] [EVALMODE]
+DATASET: syn1, syn4
+EVALMODE: train, eval
+"""
 
 import os
 import pickle
@@ -11,13 +15,18 @@ from models import GCNSynthetic
 
 if len(sys.argv) != 2:
     print("\nUSAGE: python tests/create_checkpoint.py [DATASET]")
-    print("[DATASET]: syn1, syn4, syn5")
+    print("[DATASET]: syn1, syn4")
+    print("There's a separate script for syn5.")
     exit(1)
 
 
 ## ===== CONSTANTS =====
 DATASET = sys.argv[1]
-
+if DATASET not in ['syn1', 'syn4']:
+    print("\nINVALID DATASET!")
+    print("Dataset options: syn1, syn4")
+    print("There's a separate script for syn5.")
+    exit(1)
 
 ## ===== DATA =====
 with torch.no_grad():
@@ -33,7 +42,7 @@ with open(F"tests/prog_args_{DATASET}.pkl", "rb") as file:
     prog_args = pickle.load(file)
 
 
-## ===== Model =====
+## ===== MODEL =====
 model = GCNSynthetic(
     nfeat=input_dim,
     nhid=prog_args.hidden_dim,
@@ -47,7 +56,7 @@ model = GCNSynthetic(
 state_dict_cfgnn = torch.load(f"cfgnn_model_weights/gcn_3layer_{DATASET}.pt")
 
 
-## ===== Preds =====
+## ===== PREDS =====
 model.load_state_dict(state_dict_cfgnn)
 model.eval()
 preds = model(
@@ -87,3 +96,5 @@ ckpt["cg"]["test_idx"] = test_set_indices
 ckpt["model_state"] = state_dict_cfgnn
 os.makedirs(f"data/{DATASET}", exist_ok=True)
 torch.save(ckpt, f"data/{DATASET}/eval_as_eval.pt")
+
+print(f"Checkpoint saved in the folder: data/{DATASET}")

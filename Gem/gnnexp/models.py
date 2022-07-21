@@ -1,9 +1,11 @@
+import math
+
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.nn import init
 import torch.nn.functional as F
-
-import numpy as np
+from torch.nn.parameter import Parameter
 
 # GCN basic operation
 class GraphConv(nn.Module):
@@ -616,3 +618,91 @@ class SoftPoolingGcnEncoder(GcnEncoderGraph):
             return loss + self.link_loss
         return loss
 
+
+class GraphConvolution(nn.Module):
+    """
+    Simple GCN layer, similar to https://arxiv.org/abs/1609.02907
+    """
+
+    def __init__(self, in_features, out_features, bias=True):
+        super(GraphConvolution, self).__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.weight = Parameter(torch.FloatTensor(in_features, out_features))
+        if bias:
+            self.bias = Parameter(torch.FloatTensor(out_features))
+        else:
+            self.register_parameter('bias', None)
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        stdv = 1. / math.sqrt(self.weight.size(1))
+        self.weight.data.uniform_(-stdv, stdv)
+        if self.bias is not None:
+            self.bias.data.uniform_(-stdv, stdv)
+
+    def forward(self, input, adj):
+        support = torch.mm(input, self.weight)
+        output = torch.spmm(adj, support)
+        if self.bias is not None:
+            return output + self.bias
+        else:
+            return output
+
+    def __repr__(self):
+        return self.__class__.__name__ + ' (' \
+               + str(self.in_features) + ' -> ' \
+               + str(self.out_features) + ')'
+
+
+class GCNSynthetic(nn.Module):
+    """
+    3-layer GCN used in GNN Explainer synthetic tasks, including
+    """
+    def __init__(self, nfeat, nhid, nout, nclass, dropout, device='cpu'):
+        super(GCNSynthetic, self).__init__()
+        self.device = device
+
+        self.gc1 = GraphConvolution(nfeat, nhid)
+        self.gc2 = GraphConvolution(nhid, nhid)
+        self.gc3 = GraphConvolution(nhid, nout)
+        self.lin = nn.Linear(nhid + nhid + nout, nclass)
+        self.dropout = dropout
+
+    def forward(self, x, adj):
+        x = x.squeeze(0).to(self.device)
+        adj = adj.squeeze(0).to(self.device)
+        norm_adj = self._normalize_adj(adj)
+
+        x1 = F.relu(self.gc1(x, norm_adj))
+        x1 = F.dropout(x1, self.dropout, training=self.training)
+        x2 = F.relu(self.gc2(x1, norm_adj))
+        x2 = F.dropout(x2, self.dropout, training=self.training)
+        x3 = self.gc3(x2, norm_adj)
+        x = self.lin(torch.cat((x1, x2, x3), dim=1))
+        return F.log_softmax(x, dim=1).unsqueeze(0)
+
+    def loss(self, pred, label):
+        return F.nll_loss(
+            pred.squeeze(0), # GEM provides an extra dimension.
+            label.squeeze(0) # GEM provides an extra dimension.
+        )
+    
+    def _get_degree_matrix(self, adj):
+        return torch.diag(sum(adj))
+
+    def _normalize_adj(self, adj):
+        # Normalize adjacancy matrix according to reparam trick in GCN paper
+        if torch.sum(torch.diag(adj) - torch.ones(adj.shape[0])) != 0:
+            A_tilde = adj + torch.eye(adj.shape[0]).to(self.device)
+        else:
+            # The adjacency matrix already has self loops.
+            A_tilde = adj
+        D_tilde = self._get_degree_matrix(A_tilde)
+        # Raise to power -1/2, set all infs to 0s
+        D_tilde_exp = D_tilde ** (-1 / 2)
+        D_tilde_exp[torch.isinf(D_tilde_exp)] = 0
+
+        # Create norm_adj = (D + I)^(-1/2) * (A + I) * (D + I) ^(-1/2)
+        norm_adj = torch.mm(torch.mm(D_tilde_exp, A_tilde), D_tilde_exp)
+        return norm_adj

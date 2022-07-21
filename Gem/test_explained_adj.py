@@ -3,6 +3,7 @@
 """
 import argparse
 import os
+import time
 
 import sklearn.metrics as metrics
 
@@ -150,6 +151,7 @@ def arg_parse():
     parser.add_argument('--distillation', type=str, default=None, help='Path of distillation.')
     parser.add_argument('--exp_out', type=str, default=None, help='Path of explainer output.')
     parser.add_argument('--test_out', type=str, default=None, help='Path of test output.')
+    parser.add_argument('--evalset', type=str, default='eval', help='Transductive ckpt (train) or Inductive ckpt (eval)')
 
     # TODO: Check argument usage
     parser.set_defaults(
@@ -192,7 +194,7 @@ def main():
         print("Using CPU")
 
     # Load a model checkpoint
-    ckpt = io_utils.load_ckpt(prog_args)
+    ckpt = torch.load(f"data/{prog_args.dataset}/eval_as_{prog_args.evalset}.pt")
     cg_dict = ckpt["cg"] # get computation graph
     input_dim = cg_dict["feat"].shape[2] 
     num_classes = cg_dict["pred"].shape[2]
@@ -225,14 +227,13 @@ def main():
             # class weight in CE loss for handling imbalanced label classes
             prog_args.loss_weight = torch.tensor([1.0, 5.0], dtype = torch.float).to(device) 
         # Explain Node prediction
-        model = models.GcnEncoderNode(
-            input_dim = input_dim,
-            hidden_dim = prog_args.hidden_dim,
-            embedding_dim = prog_args.output_dim,
-            label_dim = num_classes,
-            num_layers = prog_args.num_gc_layers,
-            bn = prog_args.bn,
-            args = prog_args,
+        model = models.GCNSynthetic(
+            nfeat=input_dim,
+            nhid=prog_args.hidden_dim,
+            nout=prog_args.output_dim,
+            nclass=num_classes,
+            dropout=0.0,
+            device=device
         )
     
     if prog_args.gpu:
@@ -248,7 +249,7 @@ def main():
     adj = torch.from_numpy(cg_dict["adj"]).float()
     label = torch.from_numpy(cg_dict["label"][0]).long()
     model.eval()
-    preds, _ = model(features, adj)
+    preds = model(features, adj)
     _, pred_label = torch.max(preds[0], dim=1)
     neg_nodes = np.where(pred_label.detach().numpy() != label)[0]
     ce = torch.nn.CrossEntropyLoss(reduction='none')
@@ -260,7 +261,7 @@ def main():
 
     def evaluate_adj(node_idx_new, feat, adj, _label, losses, corrects):
         with torch.no_grad():
-            pred, _ = model(feat, adj)
+            pred = model(feat, adj)
             loss = ce(pred[0], _label)
             _, pred_label = torch.max(pred[0], 1)
             correct = (pred_label[node_idx_new] == _label[node_idx_new]).float().sum()
@@ -314,6 +315,7 @@ def main():
     gnnexp_result_path = os.path.join('explanation', 'gnnexp', io_utils.gen_explainer_prefix(prog_args))
     valid_node_idxs = []
     
+    data_original = dict()
     for node_idx in node_idxs:
         if not os.path.exists("explanation/%s/node%d_pred.csv"%(prog_args.exp_out, node_idx)):
             continue
@@ -369,6 +371,17 @@ def main():
             ours_losses,
             ours_corrects
         )
+
+        # For computing baselines.
+        data_original[node_idx] = {
+            'node_idx_new':node_idx_new,
+            'sub_feat':sub_feat,
+            'org_adj':org_adj,
+            'sub_label':sub_label,
+            'org_losses':org_losses,
+            'org_corrects':org_corrects
+        }
+        continue # we just need this dictionary for the baselines.
         fname = 'masked_adj_' + ('node_idx_'+str()+'graph_idx_'+str(0)+'.ckpt')
         gnnexp_data = torch.load(os.path.join(gnnexp_result_path, 'masked_adj_node_idx_%sgraph_idx_0.ckpt' % node_idx), map_location=device)
         # gnnexp_adj = torch.from_numpy(gnnexp_data['adj']).float().unsqueeze(0)
@@ -442,6 +455,12 @@ def main():
             plt.clf()
             plt.close(fig)
 
+    FOLDER = f"output/{prog_args.dataset}/{int(time.time())}"
+    os.makedirs(FOLDER, exist_ok=True)
+    with open(f"{FOLDER}/original_sub_data.pkl", "wb") as file:
+        pickle.dump(data_original, file)
+        exit(0)
+    
     merged_loss = np.stack([
         valid_node_idxs,
         org_losses,

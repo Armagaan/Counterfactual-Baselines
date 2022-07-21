@@ -381,12 +381,7 @@ def main():
             'org_losses':org_losses,
             'org_corrects':org_corrects
         }
-
-        FOLDER = f"output/{prog_args.dataset}/{int(time.time())}"
-        os.makedirs(FOLDER, exist_ok=True)
-        with open(f"{FOLDER}/original_sub_data.pkl", "wb") as file:
-            pickle.dump(data_original, file)
-
+        continue # we just need this dictionary for the baselines.
         fname = 'masked_adj_' + ('node_idx_'+str()+'graph_idx_'+str(0)+'.ckpt')
         gnnexp_data = torch.load(os.path.join(gnnexp_result_path, 'masked_adj_node_idx_%sgraph_idx_0.ckpt' % node_idx), map_location=device)
         # gnnexp_adj = torch.from_numpy(gnnexp_data['adj']).float().unsqueeze(0)
@@ -460,6 +455,12 @@ def main():
             plt.clf()
             plt.close(fig)
 
+    FOLDER = f"output/{prog_args.dataset}/{int(time.time())}"
+    os.makedirs(FOLDER, exist_ok=True)
+    with open(f"{FOLDER}/original_sub_data.pkl", "wb") as file:
+        pickle.dump(data_original, file)
+        exit(0)
+    
     merged_loss = np.stack([
         valid_node_idxs,
         org_losses,

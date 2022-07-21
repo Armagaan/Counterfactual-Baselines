@@ -10,27 +10,30 @@ import torch
 sys.path.append("gnnexp")
 from models import GCNSynthetic
 
-if len(sys.argv) != 3:
-    print("\nUSAGE: python tests/baselines.py [DATASET] [EVALMODE]")
+if len(sys.argv) != 4:
+    print("\nUSAGE: python tests/baselines.py [DATASET] [EVALMODE] [OUTPUTS-FOLDER]")
     print("[DATASET]: syn1, syn4, syn5")
     print("[EVALMODE]: train, eval\n")
+    print("[OUTPUTS-FOLDER]: path to folder containing the output of evaluate_adj.py")
+    print("Hint: output/syn1/12345, output/syn4/12345, output/syn5/12345")
     exit(1)
 
 ## ===== CONSTANTS =====
 DATASET = sys.argv[1]
 EVAL = sys.argv[2]
+OUTPUTS = sys.argv[3]
 
+if  DATASET not in ['syn1', 'syn4', 'syn5']:
+    print("INVALID DATASET!")
+    exit(1)
+elif EVAL not in ['eval', 'train']:
+    print("INVALID EVALMODE!")
+    exit(1)
 
 ## ===== DATA =====
 # The extracted subadjacency matrices.
-#todo: Automate supply of the output folder.
-if DATASET == 'syn1':
-    with open("output/syn1/1657970490/original_sub_data.pkl", "rb") as file:
-        sub_data = pickle.load(file)
-elif DATASET == 'syn4':
-    with open("output/syn4/1658036723/original_sub_data.pkl", "rb") as file:
-        sub_data = pickle.load(file)
-
+with open(f"{OUTPUTS}/original_sub_data.pkl", "rb") as file:
+    sub_data = pickle.load(file)
 sub_labels = dict()
 for node in sub_data:
     new_idx = sub_data[node]['node_idx_new']
@@ -41,7 +44,8 @@ PATH = f"explanation/{DATASET}_top6"
 for filename in os.listdir(PATH):
     if 'label' not in filename:
         continue
-    explanations[int(filename[4:7])] = pd.read_csv(f"{PATH}/{filename}", header=None).to_numpy()
+    node_idx = ''.join(filter(lambda i: i.isdigit(), filename))
+    explanations[int(node_idx)] = pd.read_csv(f"{PATH}/{filename}", header=None).to_numpy()
 
 
 ## ===== MODEL =====

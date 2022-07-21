@@ -3,4 +3,5 @@ distillation
 ckpt
 explanation
 temp
+.vscode
 __pycache__

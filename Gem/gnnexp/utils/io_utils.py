@@ -20,7 +20,7 @@ import torch
 import networkx as nx
 import tensorboardX
 
-import cv2
+# import cv2 #! Couldn't install cv2 in the conda env
 
 import torch
 import torch.nn as nn
@@ -163,7 +163,7 @@ def save(mask_cg):
     mask = (mask - np.min(mask)) / np.max(mask)
     mask = 1 - mask
 
-    cv2.imwrite("mask.png", np.uint8(255 * mask))
+    # cv2.imwrite("mask.png", np.uint8(255 * mask)) #! Couldn't install cv2 in the conda env
 
 def log_matrix(writer, mat, name, epoch, fig_size=(8, 6), dpi=200):
     """Save an image of a matrix to disk.

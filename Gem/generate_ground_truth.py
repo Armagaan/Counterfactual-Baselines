@@ -277,7 +277,7 @@ def main():
     G = nx.from_numpy_matrix(cg_dict["adj"][0])
     masked_loss = []
     sorted_edges = sorted(G.edges)
-    edge_dict = np.zeros(adj.shape[1:], dtype=np.int)
+    edge_dict = np.zeros(adj.shape[1:], dtype=int)
     adj_dict = {}
     for node in G:
         adj_dict[node] = list(G.neighbors(node))

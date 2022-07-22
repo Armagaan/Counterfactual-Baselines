@@ -71,9 +71,9 @@ def arg_parse_exp_graph_mutag_0():
 
 def arg_parse_exp_graph_nci1():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", dest="dataset", type=str, default="Mutagenicity_0",
+    parser.add_argument("--dataset", dest="dataset", type=str, default="NCI1",
                         help="choose a graph explanation task")
-    parser.add_argument("--model_path", dest="model_path", type=str, default="log/Mutagenicity_0_logs",
+    parser.add_argument("--model_path", dest="model_path", type=str, default="log/NCI1_logs",
                         help="path to the model that need to be explained")
     parser.add_argument("--gpu", dest="gpu", action="store_true", help="whether to use gpu")
     parser.add_argument("--cuda", dest="cuda", type=str, default='0', help="which cuda")

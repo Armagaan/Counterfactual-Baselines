@@ -1,4 +1,5 @@
 import os
+import pickle
 import sys
 
 import numpy as np
@@ -16,16 +17,13 @@ if __name__ == "__main__":
     np.random.seed(0)
     exp_args = arg_parse_exp_graph_nci1()
     print("argument:\n", exp_args)
-    model_path = exp_args.model_path
-    # train_indices = np.load(
-    #     os.path.join(model_path, 'train_indices.pickle'),
-    #     allow_pickle=True
-    # ) # * We don't need this.
-    test_indices = np.load(
-        "datasets/NCI1/index.pkl",
-        allow_pickle=True
-    )
-    test_indices = test_indices["idx_test"]
+    
+    with open("datasets/Eval-sets/indices_nci1.pkl", "rb") as file:
+        indices = pickle.load(file)
+    train_indices = indices['idx_train'].numpy()
+    val_indices = indices['idx_val'].numpy()
+    test_indices = indices['idx_test'].numpy()
+    
     G_dataset = nci1_preprocessing('datasets/NCI1/raw/')
     graphs = G_dataset.graphs
     labels = G_dataset.labels
@@ -33,10 +31,9 @@ if __name__ == "__main__":
         device = torch.device('cuda:%s' % exp_args.cuda)
     else:
         device = 'cpu'
-    base_model = GCNGraph(G_dataset.feat_dim, 128).to(device) # todo: We need a new architecture which matches the weight_dictionary.
-    base_model.load_state_dict(
-        torch.load(os.path.join(model_path, 'model.model'))
-    ) # todo: We have to move to weights to this location.
+    base_model = GCNGraph(G_dataset.feat_dim, 128).to(device)
+    state_dict = torch.load("graph_classification_model_weights/nci1_weights.pt")
+    base_model.load_state_dict(state_dict)
     #  fix the base model
     for param in base_model.parameters():
         param.requires_grad = False
@@ -46,7 +43,7 @@ if __name__ == "__main__":
         base_model=base_model,
         G_dataset=G_dataset,
         args=exp_args,
-        test_indices=test_indices,
+        test_indices=val_indices,
         # fix_exp=15
     )
 

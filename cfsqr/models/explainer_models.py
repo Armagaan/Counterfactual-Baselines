@@ -35,24 +35,14 @@ class GraphExplainerEdge(torch.nn.Module):
                                        self.G_dataset.graphs[gid].edata['weight'])[0, 0]
             pred_label = torch.round(ori_pred)
             ori_label = self.G_dataset.labels[gid]
-            if self.args.dataset == 'Mutagenicity_0':
-                # Mutagenicity has flipped labels.
-                # Only explain why the graph IS predicted as mutagenic.
-                if pred_label == 0 and ori_label == 0:
-                    masked_adj, exp_num = self.explain(gid, ori_pred, folder_path)
-                    exp_dict[gid] = masked_adj
-                    num_dict[gid] = exp_num
-                    t_gid.append(gid)
-                    pred_label_dict[gid] = pred_label
-            else:
-                # only explain correct label-1 predicttions
-                if pred_label == 1 and ori_label == 1:
-                    masked_adj, exp_num = self.explain(gid, ori_pred, folder_path)
-                    exp_dict[gid] = masked_adj
-                    num_dict[gid] = exp_num
 
-                    t_gid.append(gid)
-                    pred_label_dict[gid] = pred_label
+            if pred_label == 1 and ori_label == 1:
+                masked_adj, exp_num = self.explain(gid, ori_pred, folder_path)
+                exp_dict[gid] = masked_adj
+                num_dict[gid] = exp_num
+
+                t_gid.append(gid)
+                pred_label_dict[gid] = pred_label
 
         print('average number of exps:', sum(num_dict.values()) / len(num_dict.keys()))
         PN = self.compute_pn(exp_dict)

@@ -6,7 +6,7 @@ import numpy as np
 import torch
 
 from models.explainer_models import GraphExplainerEdge
-from models.gcn import GCNGraph
+from models.gcn import GCNGraph_Mutag
 from utils.argument import arg_parse_exp_graph_mutag_0
 from utils.preprocessing.mutag_preprocessing_0 import mutag_preprocessing_0
 
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     else:
         device = 'cpu'
     
-    base_model = GCNGraph(G_dataset.feat_dim, 128).to(device)
+    base_model = GCNGraph_Mutag(G_dataset.feat_dim, 128).to(device)
     state_dict = torch.load("graph_classification_model_weights/mutag_weights.pt")
     base_model.load_state_dict(state_dict)
     #  fix the base model

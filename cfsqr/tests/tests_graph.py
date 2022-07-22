@@ -1,5 +1,3 @@
-# Mutagenecity
-
 
 ## * Imports
 from collections import defaultdict
@@ -32,10 +30,6 @@ with open(f"{FOLDER}/pred_proba.txt", "r") as file:
 
 with open(f"{FOLDER}/t_gid.pkl", "rb") as file:
     t_gid = pickle.load(file) # format: subgraph_id (same as node_id)
-
-# ! TEMPORARY
-with open("datasets/Eval-sets/eval-set-bashapes.pkl", "rb") as file:
-    eval_set = pickle.load(file)
 
 
 ## * Constants

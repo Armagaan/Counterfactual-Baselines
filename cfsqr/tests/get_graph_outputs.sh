@@ -8,7 +8,7 @@ usage() {
     echo
     echo "USAGE: bash ${0} [-d DATASET] [-a ALPHA]" >&2
     echo
-    echo "DATASET:  Dataset name. One of [mutag, ]"
+    echo "DATASET:  Dataset name. One of [mutag, nci1]"
     echo "ALPHA:    Float value in [0.0, 1.0]. Smaller the value, greater the counterfactual behaviour"
     exit 1
 }
@@ -28,7 +28,7 @@ while getopts "a:d:" OPTION; do
 done
 shift "$(( OPTIND - 1 ))"
 
-DATASETS="mutag"
+DATASETS="mutag nci1"
 MIN=0.0
 MAX=1.0
 if [[ ! " ${DATASETS[*]} " =~ " ${DATASET} " ]]; then
@@ -57,6 +57,9 @@ mkdir "$FOLDER"
 case ${DATASET} in
     mutag)
         python scripts/exp_graph.py --alp="$ALP" --output="$FOLDER" > "$FOLDER"/log.txt
+        ;;
+    nci1)
+        python scripts/exp_graph_nci1.py --alp="$ALP" --output="$FOLDER" > "$FOLDER"/log.txt
         ;;
     *)
         echo "Something's wrong" >&2

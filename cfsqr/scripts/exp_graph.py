@@ -21,9 +21,9 @@ if __name__ == "__main__":
     print(os.getcwd())
     with open("datasets/Eval-sets/indices_mutagenicity.pkl", "rb") as file:
         indices = pickle.load(file)
-    train_indices = indices['idx_train']
-    val_indices = indices['idx_val']
-    test_indices = indices['idx_test']
+    train_indices = indices['idx_train'].numpy()
+    val_indices = indices['idx_val'].numpy()
+    test_indices = indices['idx_test'].numpy()
 
     G_dataset = mutag_preprocessing_0(dataset_dir="datasets/Mutagenicity_0")
     graphs = G_dataset.graphs
@@ -36,7 +36,6 @@ if __name__ == "__main__":
     base_model = GCNGraph(G_dataset.feat_dim, 128).to(device)
     state_dict = torch.load("graph_classification_model_weights/mutag_weights.pt")
     base_model.load_state_dict(state_dict)
-    base_model.eval()
     #  fix the base model
     for param in base_model.parameters():
         param.requires_grad = False
@@ -46,7 +45,7 @@ if __name__ == "__main__":
         base_model=base_model,
         G_dataset=G_dataset,
         args=exp_args,
-        test_indices=test_indices,
+        test_indices=val_indices,
         # fix_exp=15
     )
 

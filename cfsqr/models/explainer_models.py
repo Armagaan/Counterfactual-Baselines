@@ -91,7 +91,7 @@ class GraphExplainerEdge(torch.nn.Module):
         # train explainer
         optimizer = torch.optim.Adam(explainer.parameters(), lr=self.args.lr, weight_decay=0)
         explainer.train() # ! Calling this line set the base_model in training mode as well.
-        self.base_model.training = False # manually set training off.
+        explainer.base_model.training = False # * manually set training off.
 
         for epoch in range(self.args.num_epochs):
             explainer.zero_grad()
@@ -114,7 +114,7 @@ class GraphExplainerEdge(torch.nn.Module):
             np.savetxt(file, temp.numpy())
 
         masked_adj = explainer.get_masked_adj()
-        masked_adj = explainer.get_masked_adj()
+        # masked_adj = explainer.get_masked_adj()
         new_edge_num = len(masked_adj[masked_adj > self.args.mask_thresh])
         exp_num = new_edge_num / 2
         return masked_adj, exp_num

@@ -1,0 +1,8 @@
+argument:
+ Namespace(alp=0.0, cuda='0', dataset='Mutagenicity_0', gam=0.5, gpu=False, lam=1000, lr=0.05, mask_thresh=0.5, model_path='log/Mutagenicity_0_logs', num_epochs=500, opt='adam', output='outputs/muta/muta-alp_0.0-1658481485', weight_decay=0.005)
+processing
+average number of exps: 11.76923076923077
+PN 0.8974358974358975
+PS 0.7692307692307693
+FNS 0.8284023668639053
+acc:  0.9670858930883167  pre:  0.6489930056068991  rec:  0.6503904809787162  f1:  0.578920225602648

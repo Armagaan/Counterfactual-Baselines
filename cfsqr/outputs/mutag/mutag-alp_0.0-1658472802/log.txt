@@ -1,9 +1,0 @@
-argument:
- Namespace(alp=0.0, cuda='0', dataset='Mutagenicity_0', gam=0.5, gpu=False, lam=1000, lr=0.05, mask_thresh=0.5, model_path='log/Mutagenicity_0_logs', num_epochs=500, opt='adam', output='outputs/mutag/mutag-alp_0.0-1658472802', weight_decay=0.005)
-/home/shade/code/github/Counterfactual-Baselines/cfsqr
-processing
-average number of exps: 0.3333333333333333
-PN 1.0
-PS 1.0
-FNS 1.0
-acc:  0.9989333333333333  pre:  0.0  rec:  0.0  f1:  0.0

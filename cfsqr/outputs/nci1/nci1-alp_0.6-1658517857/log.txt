@@ -1,0 +1,8 @@
+argument:
+ Namespace(alp=0.6, cuda='0', dataset='NCI1', gam=0.5, gpu=False, lam=1000, lr=0.05, mask_thresh=0.5, model_path='log/NCI1_logs', num_epochs=500, opt='adam', output='outputs/nci1/nci1-alp_0.6-1658517857', weight_decay=0.005)
+processing
+average number of exps: 16.4375
+PN 0.7670454545454546
+PS 0.7954545454545454
+FNS 0.7809917355371901
+acc:  0.9707461929545983  pre:  0.0  rec:  0.0  f1:  0.0

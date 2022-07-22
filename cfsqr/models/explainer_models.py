@@ -81,7 +81,7 @@ class GraphExplainerEdge(torch.nn.Module):
         # train explainer
         optimizer = torch.optim.Adam(explainer.parameters(), lr=self.args.lr, weight_decay=0)
         explainer.train() # ! Calling this line set the base_model in training mode as well.
-        explainer.base_model.training = False # * manually set training off.
+        # explainer.base_model.training = False # * manually set training off.
 
         for epoch in range(self.args.num_epochs):
             explainer.zero_grad()

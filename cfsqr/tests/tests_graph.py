@@ -5,6 +5,8 @@ import numpy as np
 import pickle
 import sys
 
+from torch import sigmoid
+
 if len(sys.argv) != 2:
     print(f"Usage: python tests.py [FOLDER]")
     print("FOLDER: Specify the folder containing the outputs of get_outputs.sh.")
@@ -81,14 +83,18 @@ predictions = defaultdict(int)
 for node_id, line in zip(t_gid, pred_proba):
     line = line.strip().split()
     line = [float(pred) for pred in line]
-    predictions[node_id] = line.index(max(line))
+    sigmoid_proba = line[0]
+    predictions[node_id] = round(sigmoid_proba)
 labels_and_preds = defaultdict(tuple)
+
 for node_id in t_gid:
     labels_and_preds[node_id] = (int(pred_label_dict[node_id]), predictions[node_id])
 per_label_cf_found = defaultdict(int)
+
 for node_id, (label, prediction) in labels_and_preds.items():
     if label != prediction:
         per_label_cf_found[f"label-{label}"] += 1
+
 per_label_fidelity = dict()
 for key, value in per_label_cf_found.items():
     per_label_fidelity[key] = 1 - per_label_cf_found[key]/NODES_PER_LABEL[key]
@@ -103,7 +109,7 @@ cf_found = 0
 for node_id, (label, prediction) in labels_and_preds.items():
     if label != prediction:
         cf_found += 1
-        
+
 fidelity = 1 - cf_found/sum(list(NODES_PER_LABEL.values()))
 print("\n###############\n")
 print(f"Fidelity: {fidelity}")

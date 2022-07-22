@@ -34,7 +34,7 @@ if __name__ == "__main__":
         device = 'cpu'
     
     base_model = GCNGraph_Mutag(G_dataset.feat_dim, 128).to(device)
-    state_dict = torch.load("graph_classification_model_weights/mutag_weights.pt")
+    state_dict = torch.load("graph_classification_model_weights/new_mutag_weights.pt")
     base_model.load_state_dict(state_dict)
     #  fix the base model
     for param in base_model.parameters():

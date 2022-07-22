@@ -32,7 +32,7 @@ if __name__ == "__main__":
     else:
         device = 'cpu'
     base_model = GCNGraph(G_dataset.feat_dim, 128).to(device)
-    state_dict = torch.load("graph_classification_model_weights/nci1_weights.pt")
+    state_dict = torch.load("graph_classification_model_weights/new_nci1_weights.pt")
     base_model.load_state_dict(state_dict)
     #  fix the base model
     for param in base_model.parameters():

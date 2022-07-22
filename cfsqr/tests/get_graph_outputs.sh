@@ -28,7 +28,7 @@ while getopts "a:d:" OPTION; do
 done
 shift "$(( OPTIND - 1 ))"
 
-DATASETS="muta"
+DATASETS="mutag"
 MIN=0.0
 MAX=1.0
 if [[ ! " ${DATASETS[*]} " =~ " ${DATASET} " ]]; then
@@ -55,7 +55,7 @@ mkdir "$FOLDER"
 
 # Choose a script based on the supplied dataset.
 case ${DATASET} in
-    muta)
+    mutag)
         python scripts/exp_graph.py --alp="$ALP" --output="$FOLDER" > "$FOLDER"/log.txt
         ;;
     *)

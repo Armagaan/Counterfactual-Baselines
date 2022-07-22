@@ -1,11 +1,14 @@
 import os
+import pickle
+import sys
+
 import numpy as np
 import torch
-from utils.argument import arg_parse_exp_graph_mutag_0
+
 from models.explainer_models import GraphExplainerEdge
 from models.gcn import GCNGraph
-from utils.preprocessing.mutag_preprocessing_0 import MutagDataset0
-import sys
+from utils.argument import arg_parse_exp_graph_mutag_0
+from utils.preprocessing.mutag_preprocessing_0 import mutag_preprocessing_0
 
 
 if __name__ == "__main__":
@@ -14,18 +17,26 @@ if __name__ == "__main__":
     np.random.seed(0)
     exp_args = arg_parse_exp_graph_mutag_0()
     print("argument:\n", exp_args)
-    model_path = exp_args.model_path
-    train_indices = np.load(os.path.join(model_path, 'train_indices.pickle'), allow_pickle=True)
-    test_indices = np.load(os.path.join(model_path, 'test_indices.pickle'), allow_pickle=True)
-    G_dataset = MutagDataset0(load_path=os.path.join(model_path))
+    
+    print(os.getcwd())
+    with open("datasets/Eval-sets/indices_mutagenicity.pkl", "rb") as file:
+        indices = pickle.load(file)
+    train_indices = indices['idx_train']
+    val_indices = indices['idx_val']
+    test_indices = indices['idx_test']
+
+    G_dataset = mutag_preprocessing_0(dataset_dir="datasets/Mutagenicity_0")
     graphs = G_dataset.graphs
     labels = G_dataset.labels
     if exp_args.gpu:
         device = torch.device('cuda:%s' % exp_args.cuda)
     else:
         device = 'cpu'
+    
     base_model = GCNGraph(G_dataset.feat_dim, 128).to(device)
-    base_model.load_state_dict(torch.load(os.path.join(model_path, 'model.model')))
+    state_dict = torch.load("graph_classification_model_weights/mutag_weights.pt")
+    base_model.load_state_dict(state_dict)
+    base_model.eval()
     #  fix the base model
     for param in base_model.parameters():
         param.requires_grad = False

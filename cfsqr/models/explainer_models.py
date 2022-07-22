@@ -28,20 +28,32 @@ class GraphExplainerEdge(torch.nn.Module):
         num_dict = {}  # {'gid': exp_num, 'gid': exp_num}
         pred_label_dict = {}
         t_gid = []
-        num=200
-        for gid in tqdm.tqdm(self.test_indices[:num]):
+        num = 200
+        for gid in tqdm.tqdm(self.test_indices):
             ori_pred = self.base_model(self.G_dataset.graphs[gid],
                                        self.G_dataset.graphs[gid].ndata['feat'].float(),
                                        self.G_dataset.graphs[gid].edata['weight'])[0, 0]
             pred_label = torch.round(ori_pred)
             ori_label = self.G_dataset.labels[gid]
-            if pred_label == 1 and ori_label == 1:  # only explain why the graph is predicted as mutagenic
-                masked_adj, exp_num = self.explain(gid, ori_pred, folder_path)
-                exp_dict[gid] = masked_adj
-                num_dict[gid] = exp_num
+            if self.args.dataset == 'Mutagenicity_0':
+                # Mutagenicity has flipped labels.
+                # Only explain why the graph IS predicted as mutagenic.
+                if pred_label == 0 and ori_label == 0:
+                    masked_adj, exp_num = self.explain(gid, ori_pred, folder_path)
+                    exp_dict[gid] = masked_adj
+                    num_dict[gid] = exp_num
+                    t_gid.append(gid)
+                    pred_label_dict[gid] = pred_label
+            else:
+                # only explain correct label-1 predicttions
+                if pred_label == 1 and ori_label == 1:
+                    masked_adj, exp_num = self.explain(gid, ori_pred, folder_path)
+                    exp_dict[gid] = masked_adj
+                    num_dict[gid] = exp_num
 
-                t_gid.append(gid)
-                pred_label_dict[gid] = pred_label
+                    t_gid.append(gid)
+                    pred_label_dict[gid] = pred_label
+
         print('average number of exps:', sum(num_dict.values()) / len(num_dict.keys()))
         PN = self.compute_pn(exp_dict)
         PS = self.compute_ps(exp_dict)
@@ -78,7 +90,9 @@ class GraphExplainerEdge(torch.nn.Module):
             explainer = explainer.cuda()
         # train explainer
         optimizer = torch.optim.Adam(explainer.parameters(), lr=self.args.lr, weight_decay=0)
-        explainer.train()
+        explainer.train() # ! Calling this line set the base_model in training mode as well.
+        self.base_model.training = False # manually set training off.
+
         for epoch in range(self.args.num_epochs):
             explainer.zero_grad()
             pred1, pred2 = explainer()

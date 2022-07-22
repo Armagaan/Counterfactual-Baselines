@@ -63,28 +63,31 @@ class GraphConvLayer(torch.nn.Module):
 class GCNGraph(torch.nn.Module):
     def __init__(self, in_feats, h_feats):
         super(GCNGraph, self).__init__()
-        self.conv1 = GraphConv(in_feats, h_feats)
-        self.conv2 = GraphConv(h_feats, h_feats)
-        self.conv3 = GraphConv(h_feats, h_feats)
+        self.conv1 = GraphConvLayer(in_feats, h_feats)
+        self.conv2 = GraphConvLayer(h_feats, h_feats)
+        self.conv3 = GraphConvLayer(h_feats, h_feats)
         self.dense1 = torch.nn.Linear(h_feats, 16)
         self.dense2 = torch.nn.Linear(16, 8)
         self.dense3 = torch.nn.Linear(8, 1)
 
     def forward(self, g, in_feat, e_weight):
-        h = self.conv1(g, in_feat, e_weight)
+        mat_size = int(math.sqrt(e_weight.size(0)))
+        dense_adj = e_weight.reshape(mat_size, mat_size)
+        # sparse_adj = dense_adj.to_sparse()
+
+        h = self.conv1(in_feat, dense_adj)
         h = torch.nn.functional.relu(h)
-        h = self.conv2(g, h, e_weight)
+        h = self.conv2(h, dense_adj)
         h = torch.nn.functional.relu(h)
-        h = self.conv3(g, h, e_weight)
-        h = torch.nn.functional.relu(h)
+        h = self.conv3(h, dense_adj)
         g.ndata['h'] = h
-        h = dgl.mean_nodes(g, 'h')  # pooling
+        h = dgl.readout_nodes(g, 'h', op='mean') # pooling
         h = self.dense1(h)
         h = torch.nn.functional.relu(h)
         h = self.dense2(h)
         h = torch.nn.functional.relu(h)
         h = self.dense3(h)
-        h = torch.nn.functional.sigmoid(h)
+        h = torch.sigmoid(h)
         return h
 
 

@@ -706,3 +706,31 @@ class GCNSynthetic(nn.Module):
         # Create norm_adj = (D + I)^(-1/2) * (A + I) * (D + I) ^(-1/2)
         norm_adj = torch.mm(torch.mm(D_tilde_exp, A_tilde), D_tilde_exp)
         return norm_adj
+
+
+class GNN_Custom_Graph(nn.Module):
+    def __init__(self, in_features, h_features) -> None:
+        super(GNN_Custom_Graph, self).__init__()
+        self.conv1 = GraphConvolution(in_features, h_features)
+        self.conv2 = GraphConvolution(h_features, h_features)
+        self.conv3 = GraphConvolution(h_features, h_features)
+        self.dense1 = nn.Linear(h_features, 16)
+        self.dense2 = nn.Linear(16, 8)
+        self.dense3 = nn.Linear(8, 1)
+
+    def forward(self, feature_matrix, dense_adj):
+        feature_matrix = feature_matrix.squeeze(0)
+        dense_adj = dense_adj.squeeze(0)
+        x = self.conv1(feature_matrix, dense_adj)
+        x = x.relu()
+        x = self.conv2(x, dense_adj)
+        x = x.relu()
+        x = self.conv3(x, dense_adj)
+        x = torch.mean(x, dim=0)
+        x = self.dense1(x)
+        x = x.relu()
+        x = self.dense2(x)
+        x = x.relu()
+        x = self.dense3(x)
+        x = torch.sigmoid(x)
+        return x

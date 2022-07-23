@@ -153,6 +153,7 @@ def arg_parse():
     parser.add_argument('--threshold', type=float, default=None, help='Keep k edges of prediction.')
     parser.add_argument('--output', type=str, default=None, help='output path.')
     parser.add_argument('--disconnected', action="store_true", help='Allow distill disconnected subgraphs.')
+    parser.add_argument('--evalmode', type=str, default='eval', help='Test on seen graphs or unseen graphs.')
 
     # TODO: Check argument usage
     parser.set_defaults(
@@ -206,7 +207,10 @@ def graph_labeling(G):
 
 def main():
     # Load a configuration
+    #todo: save prog_args. [DONE]
     prog_args = arg_parse()
+    with open(f"prog_args_{prog_args.dataset}.pkl", "wb") as file:
+        pickle.dump(prog_args, file)
     device = torch.device(prog_args.cuda if prog_args.gpu and torch.cuda.is_available() else "cpu")
     if prog_args.gpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = prog_args.cuda
@@ -214,8 +218,9 @@ def main():
     else:
         print("Using CPU")
 
+    #todo: replace ckpt [DONE]
     # Load a model checkpoint
-    ckpt = io_utils.load_ckpt(prog_args)
+    ckpt = torch.load(f"data/{prog_args.dataset}/eval_as_{prog_args.evalmode}.pt")
     cg_dict = ckpt["cg"] # get computation graph
     input_dim = cg_dict["feat"].shape[2] 
     num_classes = cg_dict["pred"].shape[2]
@@ -232,15 +237,11 @@ def main():
     # build model
     print("Method: ", prog_args.method)
     if graph_mode: 
+        #todo: Replace GNN. [DONE]
         # Explain Graph prediction
-        model = models.GcnEncoderGraph(
-            input_dim=input_dim,
-            hidden_dim=prog_args.hidden_dim,
-            embedding_dim=prog_args.output_dim,
-            label_dim=num_classes,
-            num_layers=prog_args.num_gc_layers,
-            bn=prog_args.bn,
-            args=prog_args,
+        model = models.GNN_Custom_Graph(
+            in_features=input_dim,
+            h_features=128,
         )
     else:
         if prog_args.dataset == "ppi_essential":
@@ -258,7 +259,8 @@ def main():
         )
     if prog_args.gpu:
         model = model.to(device) 
-    ce = torch.nn.CrossEntropyLoss(reduction='none')
+    #todo: replace by BinaryCrossEntropy as our model returns only one output. [DONE]
+    ce = torch.nn.BCELoss()
     # load state_dict (obtained by model.state_dict() when saving checkpoint)
     threshold = 0
     if prog_args.output is None:
@@ -278,7 +280,14 @@ def main():
         feat = cg_dict["feat"][graph_idx, :].float().unsqueeze(0)
         adj = cg_dict["adj"][graph_idx].float().unsqueeze(0)
         label = cg_dict["label"][graph_idx].long().unsqueeze(0)
-        preds, _ = model(feat, adj)
+        #todo: Our model only provides preds. [DONE]
+        #todo: It requries softmax's output instead of sigmoid. [DONE]
+        #todo: preds.size() = [1, 2] [DONE]
+        #todo: adj is dense. Our model accepts sparse. Modify model to accept dense. [DONE]
+        #todo: feat.size() = [1, 100, 14], adj.size() = [1, 100, 100]. [DONE]
+        #todo: Check if our model takes the first dimension or not. [DONE]
+        #todo: Our model needs batching. See if batch=None works. [DONE]
+        preds = model(feat, adj)
         loss = ce(preds, label)
         G = nx.from_numpy_matrix(adj[0].numpy())
         if prog_args.top_k is not None:
@@ -297,7 +306,8 @@ def main():
             masked_adj = adj
             masked_adj[0,x,y] = 0
             masked_adj[0,y,x] = 0
-            m_preds, _ = model(feat, masked_adj)
+            #todo: change this. [DONE]
+            m_preds = model(feat, masked_adj)
             m_loss = ce(m_preds, label)
             masked_loss += [m_loss]
             G[x][y]['weight'] = (m_loss - loss).item()
@@ -317,7 +327,8 @@ def main():
             for idx, sorted_idx in enumerate(sorted_weight_idxs):
                 sub_G.remove_edge(*sorted_edges[sorted_idx])
                 masked_adj = torch.tensor(nx.to_numpy_matrix(sub_G, weight=None)).unsqueeze(0).float()
-                m_preds, _ = model(feat, masked_adj)
+                #todo: change this. [DONE]
+                m_preds = model(feat, masked_adj)
                 m_loss = ce(m_preds, label)
                 x,y = sorted_edges[sorted_idx]
                 masked_loss += [m_loss]
@@ -367,7 +378,8 @@ def main():
                 sub_G3.add_nodes_from(list(G.nodes))
                 sub_G3.add_edges_from(sub_G2.edges)
                 masked_adj = torch.tensor(nx.to_numpy_matrix(sub_G3, weight=None)).unsqueeze(0).float()
-                m_preds, _ = model(feat, masked_adj)
+                #todo: change this [DONE]
+                m_preds = model(feat, masked_adj)
                 m_loss = ce(m_preds, label)
                 x,y = sorted_edges[sorted_idx]
                 masked_loss += [m_loss]

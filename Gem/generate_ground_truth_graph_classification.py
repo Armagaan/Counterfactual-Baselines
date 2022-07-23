@@ -289,7 +289,8 @@ def main():
         #todo: Check if our model takes the first dimension or not. [DONE]
         #todo: Our model needs batching. See if batch=None works. [DONE]
         preds = model(feat, adj)
-        loss = ce(preds, label)
+        #todo: BCEloss expects label to be float. gem's label is int. [DONE]
+        loss = ce(preds, label.float())
         G = nx.from_numpy_matrix(adj[0].numpy())
         if prog_args.top_k is not None:
             top_k = prog_args.top_k
@@ -309,7 +310,8 @@ def main():
             masked_adj[0,y,x] = 0
             #todo: change this. [DONE]
             m_preds = model(feat, masked_adj)
-            m_loss = ce(m_preds, label)
+            #todo: change this. [DONE]
+            m_loss = ce(m_preds, label.float())
             masked_loss += [m_loss]
             G[x][y]['weight'] = (m_loss - loss).item()
 
@@ -330,7 +332,8 @@ def main():
                 masked_adj = torch.tensor(nx.to_numpy_matrix(sub_G, weight=None)).unsqueeze(0).float()
                 #todo: change this. [DONE]
                 m_preds = model(feat, masked_adj)
-                m_loss = ce(m_preds, label)
+                #todo: change this. [DONE]
+                m_loss = ce(m_preds, label.float())
                 x,y = sorted_edges[sorted_idx]
                 masked_loss += [m_loss]
                 if m_loss > best_loss:
@@ -381,7 +384,8 @@ def main():
                 masked_adj = torch.tensor(nx.to_numpy_matrix(sub_G3, weight=None)).unsqueeze(0).float()
                 #todo: change this [DONE]
                 m_preds = model(feat, masked_adj)
-                m_loss = ce(m_preds, label)
+                #todo: change this [DONE]
+                m_loss = ce(m_preds, label.float())
                 x,y = sorted_edges[sorted_idx]
                 masked_loss += [m_loss]
                 if m_loss > best_loss:

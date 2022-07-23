@@ -223,7 +223,8 @@ def main():
     ckpt = torch.load(f"data/{prog_args.dataset}/eval_as_{prog_args.evalmode}.pt")
     cg_dict = ckpt["cg"] # get computation graph
     input_dim = cg_dict["feat"].shape[2] 
-    num_classes = cg_dict["pred"].shape[2]
+    #todo: our pred is only one number. [DONE]
+    num_classes = 2
     print("Loaded model from {}".format(prog_args.ckptdir))
     print("input dim: ", input_dim, "; num classes: ", num_classes)
 

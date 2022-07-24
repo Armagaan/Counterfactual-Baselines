@@ -273,7 +273,8 @@ def main():
         }, filename)
         print("Checkpoint saved to %s!" % filename)
 
-    data = torch.load("distillation/%s/graph_idx_0.ckpt" %(args.distillation), map_location=device)
+    first_graph = os.listdir("distillation/%s" %(args.distillation))[0]
+    data = torch.load(f"distillation/{args.distillation}/{first_graph}", map_location=device)
     feat_dim = data['features'].shape[-1]
     # add graph labeling as feature
     if args.graph_labeling:

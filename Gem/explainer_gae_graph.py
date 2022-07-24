@@ -45,6 +45,7 @@ parser.add_argument('--gpu', action='store_true')
 parser.add_argument('--gae3', action='store_true')
 parser.add_argument('--explain_class', type=int, default=None, help='Number of training epochs.')
 parser.add_argument('--loss', type=str, default='mse', help='Loss function')
+parser.add_argument('--evalmode', type=str, default='eval', help='Test on seen graphs or unseen graphs.')
 
 args = parser.parse_args()
 
@@ -69,7 +70,8 @@ if args.distillation is None:
 
 decimal_round = lambda x: round(x, 5)
 color_map = ['gray', 'blue', 'purple', 'red', 'brown', 'green', 'orange', 'olive']
-ckpt = torch.load('ckpt/%s_base_h20_o20.pth.tar'%(args.dataset))
+#todo: change ckpt. [DONE]
+ckpt = torch.load(f"data/{args.dataset}/eval_as_{args.evalmode}.pt")
 cg_dict = ckpt["cg"]
 label_onehot = torch.eye(100, dtype=torch.float)
 
@@ -297,7 +299,8 @@ def main():
         val_idxs = val_idxs[np.where(label[val_idxs] == args.explain_class)[0]]
         test_idxs = test_idxs[np.where(label[test_idxs] == args.explain_class)[0]]
     # Only train on samples with correct prediction
-    pred_label = np.argmax(pretrain_gnn_pred[0], axis=1)
+    #todo: Our pred is just one value since it is the output of sigmoid.
+    pred_label = np.round(pretrain_gnn_pred[0])
     train_idxs = train_idxs[np.where(pred_label[train_idxs] == label[train_idxs])[0]]
     print("Num of train:", len(train_idxs))
     print("Num of val:", len(val_idxs))

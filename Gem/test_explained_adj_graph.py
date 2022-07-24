@@ -222,9 +222,11 @@ def main():
         writer = None
 
     # Load a model checkpoint
+    #todo: change ckpt.
     ckpt = io_utils.load_ckpt(prog_args)
     cg_dict = ckpt["cg"] # get computation graph
     input_dim = cg_dict["feat"].shape[2] 
+    #todo: hardcode num_classes as ours preds are single values due to sigmoid.
     num_classes = cg_dict["pred"].shape[2]
     print("Loaded model from {}".format(prog_args.ckptdir))
     print("input dim: ", input_dim, "; num classes: ", num_classes)
@@ -240,6 +242,7 @@ def main():
     print("Method: ", prog_args.method)
     if graph_mode: 
         # Explain Graph prediction
+        #todo: change the model.
         model = models.GcnEncoderGraph(
             input_dim=input_dim,
             hidden_dim=prog_args.hidden_dim,
@@ -267,7 +270,10 @@ def main():
         model = model.to(device) 
     # load state_dict (obtained by model.state_dict() when saving checkpoint)
     model.load_state_dict(ckpt["model_state"])
+    #todo: change loss to BCEloss.
+    #todo: send label as label.float().
     ce = torch.nn.CrossEntropyLoss(reduction='none')
+    # ? What's this doing here?
     softmax = torch.nn.Softmax(dim=0)
     def log_odd(p):
         return (torch.log(p) - torch.log(1-p)).item()
@@ -392,6 +398,7 @@ def main():
 
         ours_adj = torch.from_numpy(ours_adj).unsqueeze(0).float()
 
+        #todo: save these.
         org_pred, org_p = evaluate_adj(sub_feat, org_adj, sub_label, org_losses, org_corrects)
         extracted_pred, extracted_p = evaluate_adj(sub_feat, extracted_adj, sub_label, extracted_losses, extracted_corrects)
         ours_pred, ours_p = evaluate_adj(sub_feat, ours_adj, sub_label, ours_losses, ours_corrects)

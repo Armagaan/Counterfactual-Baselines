@@ -207,10 +207,7 @@ def graph_labeling(G):
 
 def main():
     # Load a configuration
-    #todo: save prog_args. [DONE]
     prog_args = arg_parse()
-    with open(f"prog_args_{prog_args.dataset}.pkl", "wb") as file:
-        pickle.dump(prog_args, file)
     device = torch.device(prog_args.cuda if prog_args.gpu and torch.cuda.is_available() else "cpu")
     if prog_args.gpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = prog_args.cuda

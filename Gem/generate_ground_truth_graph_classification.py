@@ -298,7 +298,7 @@ def main():
             top_k = None
         sorted_edges = sorted(G.edges)
         masked_loss = []
-        edge_dict = np.zeros(adj.shape[1:], dtype=np.int)
+        edge_dict = np.zeros(adj.shape[1:], dtype=int)
         for edge_idx, (x,y) in enumerate(sorted_edges):
             edge_dict[x,y] = edge_idx
             edge_dict[y,x] = edge_idx

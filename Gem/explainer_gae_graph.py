@@ -301,7 +301,7 @@ def main():
         test_idxs = test_idxs[np.where(label[test_idxs] == args.explain_class)[0]]
     # Only train on samples with correct prediction
     #todo: Our pred is just one value since it is the output of sigmoid.
-    pred_label = np.round(pretrain_gnn_pred[0])
+    pred_label = np.argmax(pretrain_gnn_pred[0], axis=1)
     train_idxs = train_idxs[np.where(pred_label[train_idxs] == label[train_idxs])[0]]
     print("Num of train:", len(train_idxs))
     print("Num of val:", len(val_idxs))

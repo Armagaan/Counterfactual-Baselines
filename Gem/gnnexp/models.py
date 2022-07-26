@@ -716,7 +716,7 @@ class GNN_Custom_Graph(nn.Module):
         self.conv3 = GraphConvolution(h_features, h_features)
         self.dense1 = nn.Linear(h_features, 16)
         self.dense2 = nn.Linear(16, 8)
-        self.dense3 = nn.Linear(8, 1)
+        self.dense3 = nn.Linear(8, 2)
 
     def forward(self, feature_matrix, dense_adj):
         feature_matrix = feature_matrix.squeeze(0)
@@ -732,5 +732,4 @@ class GNN_Custom_Graph(nn.Module):
         x = self.dense2(x)
         x = x.relu()
         x = self.dense3(x)
-        x = torch.sigmoid(x)
         return x

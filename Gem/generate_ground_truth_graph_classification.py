@@ -258,7 +258,7 @@ def main():
     if prog_args.gpu:
         model = model.to(device) 
     #todo: replace by BinaryCrossEntropy as our model returns only one output. [DONE]
-    ce = torch.nn.BCELoss()
+    ce = torch.nn.CrossEntropyLoss()
     # load state_dict (obtained by model.state_dict() when saving checkpoint)
     threshold = 0
     if prog_args.output is None:
@@ -287,7 +287,7 @@ def main():
         #todo: Our model needs batching. See if batch=None works. [DONE]
         preds = model(feat, adj)
         #todo: BCEloss expects label to be float. gem's label is int. [DONE]
-        loss = ce(preds, label.float())
+        loss = ce(preds, label)
         G = nx.from_numpy_matrix(adj[0].numpy())
         if prog_args.top_k is not None:
             top_k = prog_args.top_k
@@ -308,7 +308,7 @@ def main():
             #todo: change this. [DONE]
             m_preds = model(feat, masked_adj)
             #todo: change this. [DONE]
-            m_loss = ce(m_preds, label.float())
+            m_loss = ce(m_preds, label)
             masked_loss += [m_loss]
             G[x][y]['weight'] = (m_loss - loss).item()
 
@@ -330,7 +330,7 @@ def main():
                 #todo: change this. [DONE]
                 m_preds = model(feat, masked_adj)
                 #todo: change this. [DONE]
-                m_loss = ce(m_preds, label.float())
+                m_loss = ce(m_preds, label)
                 x,y = sorted_edges[sorted_idx]
                 masked_loss += [m_loss]
                 if m_loss > best_loss:
@@ -382,7 +382,7 @@ def main():
                 #todo: change this [DONE]
                 m_preds = model(feat, masked_adj)
                 #todo: change this [DONE]
-                m_loss = ce(m_preds, label.float())
+                m_loss = ce(m_preds, label)
                 x,y = sorted_edges[sorted_idx]
                 masked_loss += [m_loss]
                 if m_loss > best_loss:

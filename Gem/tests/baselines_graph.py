@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 
 sys.path.append("./")
-from gnnexp.models import GNN_Custom_Graph
+from gnnexp.models import GNN_Custom_Mutag, GNN_Custom_NCI1, GNN_Custom_IsCyclic
 
 def usage():
     print("\nUSAGE: python tests/baselines_grpah.py [DATASET] [EVALMODE]")
@@ -27,9 +27,12 @@ if EVAL not in ["eval", "train"]:
     print("INVALID EVALMODE")
     usage()
 #todo: MUTAG dataset is different from other baselines.
-
-if DATASET == 'NCI1':
+if DATASET == 'Mutagenicity':
+    EXPLANATION_FOLDER = "mutag_dc_top20"
+elif DATASET == 'NCI1':
     EXPLANATION_FOLDER = "nci1_dc_top20"
+elif DATASET == 'IsCyclic':
+    EXPLANATION_FOLDER = "iscyclic_dc_top20"
 
 
 ## ===== Data =====
@@ -41,13 +44,27 @@ for filename in os.listdir(PATH):
     graph_idx = ''.join(filter(lambda i: i.isdigit(), filename))
     explanations[int(graph_idx)] = pd.read_csv(f"{PATH}/{filename}", header=None).to_numpy()
 
-ckpt = torch.load(f"data/{DATASET}/eval_as_{EVAL}.pt")
+ckpt = torch.load(f"ckpt/{DATASET}_eval_as_{EVAL}.pt")
 cg_dict = ckpt["cg"] # get computation graph
 input_dim = cg_dict["feat"].shape[2]
 
 
 ## ===== Model =====
-model = GNN_Custom_Graph(in_features=input_dim, h_features=128)
+if DATASET == 'Mutagenicity':
+    model = GNN_Custom_Mutag(
+        in_features=input_dim,
+        h_features=64,
+    )
+elif DATASET == 'NCI1':
+    model = GNN_Custom_NCI1(
+        in_features=input_dim,
+        h_features=128,
+    )
+elif DATASET == 'IsCyclic':
+    model = GNN_Custom_IsCyclic(
+        in_features=input_dim,
+        h_features=64,
+    )
 model.load_state_dict(ckpt["model_state"])
 model.eval()
 
@@ -60,7 +77,7 @@ for graph_idx in cg_dict['test_idx']:
     adj = cg_dict["adj"][graph_idx].float().unsqueeze(0) # - explanations[graph_idx]
     label = cg_dict["label"][graph_idx].float().unsqueeze(0)
     proba = model(feat, adj)
-    predictions.append(proba.round())
+    predictions.append(proba.argmax(dim=-1))
     labels.append(label)
 predictions = torch.Tensor(predictions)
 labels = torch.Tensor(labels)    
@@ -85,7 +102,7 @@ for graph_id, graph in explanations.items():
     adj = cg_dict["adj"][graph_id].float().unsqueeze(0)
     label = cg_dict["label"][graph_id].long().unsqueeze(0)
     # get original prediction
-    original_prediction = model(feat, adj).round()
+    original_prediction = model(feat, adj).argmax(dim=-1)
     # set size_count to 0
     # make a copy of the original adjacency.
     size_count = 0
@@ -104,7 +121,7 @@ for graph_id, graph in explanations.items():
         new_adj[0][r1, c1] = 0.0
         new_adj[0][r2, c2] = 0.0
         # make the prediction
-        new_prediction = model(feat, new_adj).round()
+        new_prediction = model(feat, new_adj).argmax(dim=-1)
         # increase size_count by 1.
         size_count += 1
         # if the label flipped: stop

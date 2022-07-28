@@ -71,7 +71,7 @@ if args.distillation is None:
 decimal_round = lambda x: round(x, 5)
 color_map = ['gray', 'blue', 'purple', 'red', 'brown', 'green', 'orange', 'olive']
 #todo: change ckpt. [DONE]
-ckpt = torch.load(f"data/{args.dataset}/eval_as_{args.evalmode}.pt")
+ckpt = torch.load(f"ckpt/{args.dataset}_eval_as_{args.evalmode}.pt")
 cg_dict = ckpt["cg"]
 label_onehot = torch.eye(100, dtype=torch.float)
 

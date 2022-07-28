@@ -217,11 +217,11 @@ def main():
 
     #todo: replace ckpt [DONE]
     # Load a model checkpoint
-    ckpt = torch.load(f"data/{prog_args.dataset}/eval_as_{prog_args.evalmode}.pt")
+    ckpt = torch.load(f"ckpt/{prog_args.dataset}_eval_as_{prog_args.evalmode}.pt")
     cg_dict = ckpt["cg"] # get computation graph
     input_dim = cg_dict["feat"].shape[2] 
     #todo: our pred is only one number. [DONE]
-    num_classes = 2
+    num_classes = cg_dict['pred'].shape[-1]
     print("Loaded model from {}".format(prog_args.ckptdir))
     print("input dim: ", input_dim, "; num classes: ", num_classes)
 
@@ -237,10 +237,21 @@ def main():
     if graph_mode: 
         #todo: Replace GNN. [DONE]
         # Explain Graph prediction
-        model = models.GNN_Custom_Graph(
-            in_features=input_dim,
-            h_features=128,
-        )
+        if prog_args.dataset == 'Mutagenicity':
+            model = models.GNN_Custom_Mutag(
+                in_features=input_dim,
+                h_features=64,
+            )
+        elif prog_args.dataset == 'NCI1':
+            model = models.GNN_Custom_NCI1(
+                in_features=input_dim,
+                h_features=128,
+            )
+        elif prog_args.dataset == 'IsCyclic'
+            model = models.GNN_Custom_IsCyclic(
+                in_features=input_dim,
+                h_features=64,
+            )
     else:
         if prog_args.dataset == "ppi_essential":
             # class weight in CE loss for handling imbalanced label classes
@@ -258,7 +269,7 @@ def main():
     if prog_args.gpu:
         model = model.to(device) 
     #todo: replace by BinaryCrossEntropy as our model returns only one output. [DONE]
-    ce = torch.nn.CrossEntropyLoss()
+    ce = torch.nn.CrossEntropyLoss(reduction='none')
     # load state_dict (obtained by model.state_dict() when saving checkpoint)
     threshold = 0
     if prog_args.output is None:

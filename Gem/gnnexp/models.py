@@ -732,7 +732,6 @@ class GNN_Custom_IsCyclic(nn.Module):
         x = self.dense2(x)
         x = x.relu()
         x = self.dense3(x)
-        x = F.softmax(x, dim=-1)
         return x
 
 
@@ -766,7 +765,6 @@ class GNN_Custom_Mutag(nn.Module):
         x = self.dense2(x)
         x = x.relu()
         x = self.dense3(x)
-        x = F.softmax(x, dim=-1)
         return x
 
 
@@ -791,5 +789,4 @@ class GNN_Custom_NCI1(nn.Module):
         x = self.dense2(x)
         x = x.relu()
         x = self.dense3(x)
-        x = F.softmax(x, dim=-1)
         return x

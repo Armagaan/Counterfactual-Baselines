@@ -247,7 +247,7 @@ def main():
                 in_features=input_dim,
                 h_features=128,
             )
-        elif prog_args.dataset == 'IsCyclic'
+        elif prog_args.dataset == 'IsCyclic':
             model = models.GNN_Custom_IsCyclic(
                 in_features=input_dim,
                 h_features=64,
@@ -298,7 +298,7 @@ def main():
         #todo: Our model needs batching. See if batch=None works. [DONE]
         preds = model(feat, adj)
         #todo: BCEloss expects label to be float. gem's label is int. [DONE]
-        loss = ce(preds, label)
+        loss = ce(preds.unsqueeze(0), label)
         G = nx.from_numpy_matrix(adj[0].numpy())
         if prog_args.top_k is not None:
             top_k = prog_args.top_k
@@ -319,7 +319,7 @@ def main():
             #todo: change this. [DONE]
             m_preds = model(feat, masked_adj)
             #todo: change this. [DONE]
-            m_loss = ce(m_preds, label)
+            m_loss = ce(m_preds.unsqueeze(0), label)
             masked_loss += [m_loss]
             G[x][y]['weight'] = (m_loss - loss).item()
 
@@ -341,7 +341,7 @@ def main():
                 #todo: change this. [DONE]
                 m_preds = model(feat, masked_adj)
                 #todo: change this. [DONE]
-                m_loss = ce(m_preds, label)
+                m_loss = ce(m_preds.unsqueeze(0), label)
                 x,y = sorted_edges[sorted_idx]
                 masked_loss += [m_loss]
                 if m_loss > best_loss:
@@ -393,7 +393,7 @@ def main():
                 #todo: change this [DONE]
                 m_preds = model(feat, masked_adj)
                 #todo: change this [DONE]
-                m_loss = ce(m_preds, label)
+                m_loss = ce(m_preds.unsqueeze(0), label)
                 x,y = sorted_edges[sorted_idx]
                 masked_loss += [m_loss]
                 if m_loss > best_loss:

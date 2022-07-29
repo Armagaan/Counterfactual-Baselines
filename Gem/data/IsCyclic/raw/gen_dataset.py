@@ -18,6 +18,7 @@ class isCyclicDataset(Dataset):
 
     @property
     def processed_file_names(self):
+        self.data = pickle.load(open(self.raw_paths[0],'rb'))
         return [f'data_{i}.pt' for i in range(951)] #951 graphs are present in the dataset
 
     def download(self):

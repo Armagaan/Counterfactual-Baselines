@@ -1,27 +1,23 @@
 """ explainer_main.py
-
-     Main user interface for the explainer module.
+    Main user interface for the explainer module.
 """
 import argparse
-import os
-from networkx.algorithms.components.connected import connected_components
-
-import sklearn.metrics as metrics
-
-from tensorboardX import SummaryWriter
-
-import sys
 import math
+import multiprocessing
+import os
 import pickle
 import shutil
-import torch
-import numpy as np
-import networkx as nx
-
 import sys
+
+import networkx as nx
+from networkx.algorithms.components.connected import connected_components
+import numpy as np
+import sklearn.metrics as metrics
+from tensorboardX import SummaryWriter
+import torch
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(dir_path, 'gnnexp'))
-
 import models
 import utils.io_utils as io_utils
 import utils.parser_utils as parser_utils
@@ -441,7 +437,6 @@ def main():
         assert save_dict['adj'].shape[0] == save_dict['mapping'].shape[0]
         torch.save(save_dict, "distillation/%s/graph_idx_%d.ckpt" % (prog_args.output, graph_idx))
 
-    import multiprocessing
     pool = multiprocessing.pool.ThreadPool(processes=2)
     pool.map(run, cg_dict['test_idx']+cg_dict['train_idx']+cg_dict['val_idx'])
     pool.close()
@@ -449,4 +444,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

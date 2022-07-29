@@ -28,11 +28,11 @@ if EVAL not in ["eval", "train"]:
     usage()
 #todo: MUTAG dataset is different from other baselines.
 if DATASET == 'Mutagenicity':
-    EXPLANATION_FOLDER = "mutag_dc_top20"
+    EXPLANATION_FOLDER = "mutag_top20"
 elif DATASET == 'NCI1':
     EXPLANATION_FOLDER = "nci1_dc_top20"
 elif DATASET == 'IsCyclic':
-    EXPLANATION_FOLDER = "iscyclic_dc_top20"
+    EXPLANATION_FOLDER = "iscyclic_top20"
 
 
 ## ===== Data =====

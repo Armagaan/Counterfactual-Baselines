@@ -47,17 +47,25 @@ source ~/anaconda3/etc/profile.d/conda.sh
 conda activate gem
 
 # Choose a script based on the supplied dataset.
+echo
 case ${DATASET} in
     Mutagenicity)
-        python generate_ground_truth_graph_classification.py --dataset=Mutagenicity --output=mutag --graph-mode --top_k=20 --evalmode="$EVALMODE" &&
-        python explainer_gae_graph.py --distillation=mutag_top20 --output=mutag_top20 --dataset=Mutagenicity --gpu -b 128 --weighted --gae3 --loss=mse --early_stop --graph_labeling --train_on_positive_label --epochs=300 --lr=0.01 --evalmode="$EVALMODE"
+        echo -e "\n******* DISTILLATION *******\n"
+        python generate_ground_truth_graph_classification.py --dataset=Mutagenicity --output=mutag --graph-mode --top_k=20 --evalmode="$EVALMODE"
+        echo -e "\n******* TRAINING *******\n"
+        python explainer_gae_graph.py --distillation=mutag_top20 --output=mutag_top20 --dataset=Mutagenicity --gpu -b 128 --weighted --gae3 --loss=mse --early_stop --graph_labeling --train_on_positive_label --epochs=300 --lr=0.01 --evalmode="$EVALMODE" >/dev/null
         ;;
     NCI1)
-        python generate_ground_truth_graph_classification.py --dataset=NCI1 --output=nci1_dc --graph-mode --top_k=20 --disconnected --evalmode="$EVALMODE" &&
-        python explainer_gae_graph.py --distillation=nci1_dc_top20 --output=nci1_dc_top20 --dataset=NCI1 --gpu -b 128 --weighted --gae3 --loss=mse --early_stop --graph_labeling --train_on_positive_label --epochs=300 --lr=0.01 --evalmode="$EVALMODE"
+        echo -e "\n******* DISTILLATION *******\n"
+        python generate_ground_truth_graph_classification.py --dataset=NCI1 --output=nci1_dc --graph-mode --top_k=20 --disconnected --evalmode="$EVALMODE"
+        echo -e "\n******* TRAINING *******\n"
+        python explainer_gae_graph.py --distillation=nci1_dc_top20 --output=nci1_dc_top20 --dataset=NCI1 --gpu -b 128 --weighted --gae3 --loss=mse --early_stop --graph_labeling --train_on_positive_label --epochs=300 --lr=0.01 --evalmode="$EVALMODE" >/dev/null
         ;;
     IsCyclic)
-        python scripts/exp_node_tree_grids.py --alp="$ALP" --output="$FOLDER" > "$FOLDER"/log.txt
+        echo -e "\n******* DISTILLATION *******\n"
+        python generate_ground_truth_graph_classification.py --dataset=IsCyclic --output=iscyclic --graph-mode --top_k=20 --evalmode="$EVALMODE"
+        echo -e "\n******* TRAINING *******\n"
+        python explainer_gae_graph.py --distillation=iscyclic_top20 --output=iscyclic_top20 --dataset=IsCyclic --gpu -b 128 --weighted --gae3 --loss=mse --early_stop --graph_labeling --train_on_positive_label --epochs=300 --lr=0.01 --evalmode="$EVALMODE" >/dev/null
         ;;
     *)
         echo "Something's wrong" >&2
@@ -65,6 +73,7 @@ case ${DATASET} in
         ;;
 esac
 
+echo -e "\n******* BASELINES *******\n"
 python tests/baselines_graph.py "$DATASET" "$EVALMODE"
 
 exit 0

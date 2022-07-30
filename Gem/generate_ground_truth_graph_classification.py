@@ -199,7 +199,7 @@ def graph_labeling(G):
             break
         else:
             old_strings = new_strings
-        return G
+    return G
 
 def main():
     # Load a configuration
@@ -441,6 +441,8 @@ def main():
     pool.map(run, cg_dict['test_idx']+cg_dict['train_idx']+cg_dict['val_idx'])
     pool.close()
     pool.join()
+    # for graph_idx in cg_dict['test_idx']+cg_dict['train_idx']+cg_dict['val_idx']:
+    #     run(graph_idx)
 
 if __name__ == "__main__":
     main()

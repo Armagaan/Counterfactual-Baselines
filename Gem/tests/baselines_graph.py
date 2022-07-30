@@ -29,17 +29,20 @@ if EVAL not in ["eval", "train"]:
 #todo: MUTAG dataset is different from other baselines.
 if DATASET == 'Mutagenicity':
     EXPLANATION_FOLDER = "mutag_top20"
+    DESIRED_LABEL = 0
 elif DATASET == 'NCI1':
     EXPLANATION_FOLDER = "nci1_dc_top20"
+    DESIRED_LABEL = 1
 elif DATASET == 'IsCyclic':
     EXPLANATION_FOLDER = "iscyclic_top20"
+    DESIRED_LABEL = 1
 
 
 ## ===== Data =====
 explanations = dict()
 PATH = f"explanation/{EXPLANATION_FOLDER}"
 for filename in os.listdir(PATH):
-    if 'label' not in filename:
+    if 'label' not in filename: # ? Do we use pred or label?
         continue
     graph_idx = ''.join(filter(lambda i: i.isdigit(), filename))
     explanations[int(graph_idx)] = pd.read_csv(f"{PATH}/{filename}", header=None).to_numpy()
@@ -108,7 +111,7 @@ for graph_id, graph in explanations.items():
     size_count = 0
     new_adj = adj.clone()
     # work on correctly predicted label 1 nodes only.
-    if label == 1 and original_prediction == 1:
+    if label == DESIRED_LABEL and original_prediction == DESIRED_LABEL:
         go = True
     else:
         go = False

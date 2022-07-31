@@ -241,7 +241,7 @@ def main():
         elif prog_args.dataset == 'NCI1':
             model = models.GNN_Custom_NCI1(
                 in_features=input_dim,
-                h_features=128,
+                h_features=256,
             )
         elif prog_args.dataset == 'IsCyclic':
             model = models.GNN_Custom_IsCyclic(

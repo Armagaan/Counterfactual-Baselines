@@ -61,7 +61,7 @@ if DATASET == 'Mutagenicity':
 elif DATASET == 'NCI1':
     model = GNN_Custom_NCI1(
         in_features=input_dim,
-        h_features=128,
+        h_features=256,
     )
 elif DATASET == 'IsCyclic':
     model = GNN_Custom_IsCyclic(
@@ -90,6 +90,7 @@ labels = torch.Tensor(labels)
 top_indices = dict() # They are from the Upper Triangular part only.
 top_k = 20
 for graph_id, graph in explanations.items():
+    # print(graph_id, graph.shape)
     # triu: Upper Triangular
     # abs: These are indices of the flattended version, not of the 2D version.
     explanation = cg_dict['adj'][graph_id] * graph

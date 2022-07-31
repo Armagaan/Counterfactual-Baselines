@@ -42,7 +42,7 @@ elif DATASET == 'IsCyclic':
 explanations = dict()
 PATH = f"explanation/{EXPLANATION_FOLDER}"
 for filename in os.listdir(PATH):
-    if 'label' not in filename: # ? Do we use pred or label?
+    if 'pred' not in filename:
         continue
     graph_idx = ''.join(filter(lambda i: i.isdigit(), filename))
     explanations[int(graph_idx)] = pd.read_csv(f"{PATH}/{filename}", header=None).to_numpy()
@@ -92,9 +92,10 @@ top_k = 20
 for graph_id, graph in explanations.items():
     # triu: Upper Triangular
     # abs: These are indices of the flattended version, not of the 2D version.
-    triu_abs_top_indices = (-np.triu(graph).flatten()).argsort()[:top_k]
-    index_rows = triu_abs_top_indices // graph.shape[0]
-    index_cols = triu_abs_top_indices % graph.shape[0]
+    explanation = cg_dict['adj'][graph_id] * graph
+    triu_abs_top_indices = (-np.triu(explanation).flatten()).argsort()[:top_k]
+    index_rows = triu_abs_top_indices // explanation.shape[0]
+    index_cols = triu_abs_top_indices % explanation.shape[0]
     triu_top_k_indices = [(r,c) for r,c in zip(index_rows, index_cols)]
     top_indices[graph_id] = triu_top_k_indices
 

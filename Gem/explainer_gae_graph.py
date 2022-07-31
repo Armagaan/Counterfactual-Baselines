@@ -263,7 +263,6 @@ def main():
             if args.plot:
                 plot_graph(graph_idx, org_adjs[idx], extracted_adjs[idx], pred_adjs[idx])
         
-
     def save_checkpoint(filename):
         torch.save({
             'model': model.state_dict(),
